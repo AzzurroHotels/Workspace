@@ -2,11 +2,11 @@
 
 A desktop-first static HTML/CSS/JavaScript workspace with Supabase. The current release retains name-based shared entry as requested. Admin-created name/password sign-in and Admin/Viewer policies are prepared for a later activation.
 
-## Operations workflow preview (local only)
+## Operations workflow release (15 October 2026)
 
-The Operations, Onsite Maintenance, Recurring tasks and Purchase List additions are awaiting user approval. Do not push, apply the new migration, or publish without that approval. The existing live release remains unchanged.
+Operations, Onsite Maintenance, Recurring tasks and Purchase List are part of the live workspace. Existing task fields and history were preserved; existing tasks now belong to Operations, and the new workflow lists start empty. The current release retains shared name-based entry. Staff name-and-password access remains deferred until the initial Supabase Auth administrator is ready.
 
-For the isolated review preview on PowerShell:
+For the isolated fictional-data preview on PowerShell:
 
 ```powershell
 $env:PORT='4175'
@@ -22,7 +22,7 @@ Use Node.js 22 or newer (verified with Node 24). Run npm start and open http://1
 
 Run npm run demo for an explicitly labelled, loopback-only design preview with fictional sample data and a fixed Demo administrator identity. It never contacts Supabase. Set a separate port, such as PORT=4174, to keep the demo separate. On PowerShell use $env:PORT='4174'. Local Users records demonstrate the interface only; they grant no production access.
 
-npm run start:shared is an explicit alias for normal shared mode. The deployed shared-name release uses shared_trackers. This local workflow version also requires the pending operations_workflows migration before a future live deployment. Staff sign-in additionally requires the two scripts in supabase/deferred/, a verified first admin account, and the `create-workspace-user`, `update-workspace-user`, and `workspace-sign-in` Edge Functions. Staff sign in with the name entered by an administrator; email identity details stay behind the scenes for Supabase Auth. Only admins create accounts and choose Admin or Viewer access. Passwords go to Supabase Auth and are never stored in workspace records. Never put service-role credentials or database passwords in frontend configuration.
+npm run start:shared is an explicit alias for normal shared mode. Production has the `shared_trackers` and `operations_workflows` migrations. Staff sign-in additionally requires the two scripts in `supabase/deferred/`, a verified first admin account, and the `create-workspace-user`, `update-workspace-user`, and `workspace-sign-in` Edge Functions. Staff sign in with the name entered by an administrator; email identity details stay behind the scenes for Supabase Auth. Only admins create accounts and choose Admin or Viewer access. Passwords go to Supabase Auth and are never stored in workspace records. Never put service-role credentials or database passwords in frontend configuration.
 
 ## Roles and desktop workflows
 
@@ -47,7 +47,7 @@ Admins can use N for a new task; / focuses board search; Escape closes dialogs. 
 
 ## Operations, routines and purchases
 
-Operations keeps the existing `#board` links, original tasks and all board controls. Onsite Maintenance has the same controls with a separate task area. Dashboard metrics and calendar include both areas; maintenance rows are labelled. Each board remembers its own filters. Existing rows receive only `area=operations` when the pending migration is eventually applied; original content and history are preserved.
+Operations keeps the existing `#board` links, original tasks and all board controls. Onsite Maintenance has the same controls with a separate task area. Dashboard metrics and calendar include both areas; maintenance rows are labelled. Each board remembers its own filters. Existing rows received only `area=operations`; original content and history are preserved.
 
 Recurring tasks have daily and weekly groups, optional categories, instructions, start date, Sydney time and pause. Occurrences are ordered by scheduled date and time. Due soon starts 30 minutes before; Due now lasts 15 minutes after; later tasks are Overdue. Text labels accompany colors, and the sidebar shows the count needing attention on every tab. Colors refresh every 15 seconds while the app is open. Daily tasks reset at Sydney midnight; weekly tasks reset on the scheduled weekday. A new weekly routine never creates an overdue occurrence before its start date. Completion history is retained across cycles; a unique database constraint prevents duplicate completions for the same task/date. Pausing retains history; removing a routine deletes its completion records atomically. There are no background/email/push notifications. Sydney daylight saving applies; a time skipped by the spring clock change becomes overdue after the jump, while the repeated autumn hour remains one occurrence per date.
 
@@ -77,6 +77,6 @@ Project-local frontend-design and webapp-testing skills from [Anthropic](https:/
 
 ## Release
 
-Production is https://azzurrohotels.github.io/Workspace/. This release preserves existing name entry and applies only the additive shared_trackers migration. Staff-only policies and name/password sign-in remain deferred.
+Production is https://azzurrohotels.github.io/Workspace/. This release preserves existing name entry and includes the additive `shared_trackers` and `operations_workflows` migrations. Staff-only policies and name/password sign-in remain deferred.
 
-See RELEASE.md for the current release status and exact settings, and AUDIT.md for findings/evidence. The current local feature branch is `enhance/operations-recurring-purchases`. The Pages source is `main`, which must not change until the user approves this preview. Current database records must be preserved during release. The entered name maps to a unique internal login ID; email identities stay private. Existing browser sessions persist subject to the Supabase security policy.
+See RELEASE.md for the current release status and AUDIT.md for findings/evidence. The source is on `main`, which publishes through GitHub Pages. Current database records were preserved during release. The entered name maps to a unique internal login ID only when the deferred staff mode is activated; email identities stay private. Existing shared-name sessions remain available.

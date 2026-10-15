@@ -3,22 +3,17 @@
 Production: https://azzurrohotels.github.io/Workspace/
 Supabase project: `iunkhgyoujdxybufjcgo`.
 
-## Pending workflow release - approval required
+## Operations workflow release - 15 October 2026
 
-Status: local implementation and isolated tests only. The user instructed: "publish only if i approve." No production migration, push, PR, merge or Pages publication has been performed for this version.
+Status: the additive Supabase migration is applied. The approved source is on `enhance/operations-recurring-purchases`; publishing it to `main` updates the existing GitHub Pages site.
 
-Preview: http://127.0.0.1:4175/#recurring (fictional, browser-only data). Local branch: `enhance/operations-recurring-purchases`; base live commit: `73795c9`.
+Includes Operations rename, separate Onsite Maintenance board, daily/weekly recurring schedules with due colors and sidebar counts, and Purchase List with reversible purchased status. Cache version is `20261015.6`.
 
-Includes Operations rename, separate Onsite Maintenance board, daily/weekly recurring schedules with due colors and sidebar counts, and Purchase List with reversible purchased status. Local auth work adds admin-created name/password accounts and persistent browser sessions. The Users form now asks only for a name and password; admins choose Admin or Viewer outside the form, and email identity details stay internal. The deployed shared-name entry, Supabase project, task data and GitHub Pages remain unchanged. Cache version is `20261015.6`.
+Before migration, a private snapshot outside the repository captured 37 tasks, 4 members, 0 trackers, and 190 activity entries. Supabase assigned migration version `20261015044122` (`operations_workflows`). It adds `board_tasks.area` with default `operations` plus three empty workflow tables; it does not seed demo data or rewrite original task fields. Post-migration counts and full-row fingerprints match the snapshot for all original tables, excluding only the new area field. All 37 existing tasks are in Operations; all workflow tables are empty.
 
-After explicit user approval only:
+The shared-name login remains enabled. Staff name/password access is not activated: its SQL remains in `supabase/deferred/`, and its three Edge Functions are not deployed. Do not commit or publish passwords. Activation needs the initial Auth identity to be created directly in Supabase before changing the access policies and frontend together.
 
-1. Refresh remote/main and take a fresh private backup of tasks, members, trackers and activity. Record counts and full-row fingerprints; exclude only the new area field from the post-migration comparison.
-2. Apply only `supabase/migrations/20261015040000_operations_workflows.sql`. It adds `board_tasks.area` with default operations plus three empty workflow tables. It does not seed demo data or rewrite original task fields. Align the local filename to the actual assigned migration version if the management API assigns a different timestamp.
-3. Compare original fields and history against the pre-migration snapshot, investigate any concurrent team edits, and verify grants/schema. Publish the matching frontend through the existing GitHub Pages source.
-4. Verify live tabs, existing task counts/history, and new empty workflow views without creating dummy production records. Preserve all new records if a frontend rollback is needed; do not drop tables or reset data.
-
-The pending staff-authentication scripts were moved to `supabase/deferred/` so an ordinary migration run cannot unexpectedly activate sign-in. They now cover all new workflow tables and require the operations_workflows schema first. Staff authentication remains a separate deferred change.
+The workflow release preserves all original task content, assignments, timestamps, and history. No user demo data was added to production. See the earlier release history below and the Future staff sign-in section for the separate authentication rollout.
 
 ## Published release — 15 October 2026
 

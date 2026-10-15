@@ -65,7 +65,7 @@ Private policy helpers join the current Auth user to the approved email and requ
 
 **Advisors and logs.** Security advisors reported [anonymous](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) and [authenticated](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) execution privileges on the trigger function. This is an ACL finding, not proof of a usable trigger RPC exploit. The migration removes those privileges. An activity index was reported [unused](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index); it is preserved because an observation window does not establish that it is unnecessary. Targeted last-24-hour log queries returned no matching REST HTTP 400+ responses or PostgreSQL ERROR/FATAL/PANIC entries; this is not a claim that all services or prior periods are error-free. No tracked migrations or Edge Functions were present.
 
-Public Auth settings confirm email sign-in and signup are enabled, with email confirmation required. The prepared name/password flow uses administrator-created, pre-confirmed Supabase identities and does not send email during account creation. SMTP and the live Site URL/redirect settings are not yet verified; a mail sender will be needed if email-based password recovery is added. The SQL migrations and three account Edge Functions now exist locally under the pending release paths; none has been activated in production.
+Public Auth settings confirm email sign-in and signup are enabled, with email confirmation required. The prepared name/password flow uses administrator-created, pre-confirmed Supabase identities and does not send email during account creation. SMTP and the live Site URL/redirect settings are not yet verified; a mail sender will be needed if email-based password recovery is added. The additive operations migration is live. Staff-access migrations and the three account Edge Functions remain deferred; no passwords were included in source control.
 
 ## Verification
 
@@ -82,12 +82,12 @@ Not verified: production migration execution, real email delivery, live authenti
 
 ## Release status and remaining limits
 
-Production: https://azzurrohotels.github.io/Workspace/. After approval, release the name/password frontend with the staff migrations, signup hook, and three server-side account functions in one coordinated window. See RELEASE.md. Do not change policies while leaving the original name-only app deployed.
+Production: https://azzurrohotels.github.io/Workspace/. The Operations, Maintenance, Recurring tasks and Purchase List workflow release is live. Staff name/password access remains deferred until a verified initial administrator identity can be created; do not change policies while leaving the shared-name frontend deployed.
 
 The full activity history still loads and polling runs every 30 seconds when idle. Larger workspaces should use incremental history or realtime updates. Field comparisons cannot detect a value changed and later changed back. General multi-record saves remain multiple requests and report partial outcomes; ordinary member removal is now one atomic delete.
 
-A final read-only check confirmed workspace_access and board_trackers do not yet exist on production; the live activity table has no entity check constraint that would block new tracker events. The security corrections are staged locally. The live workspace has not yet been secured by this change.
+A final read-only check confirmed `workspace_access` does not yet exist on production; `board_trackers` is live with no rows. The staff security migration and account functions remain staged for a coordinated activation. The current release continues to use shared-name access.
 
 ## Requested restoration
 
-Whole-card click and keyboard opening, explicit card Edit buttons, and completed tasks on member tabs were restored after comparison with the original repository. The user confirmed these were the missing behaviors. Timestamps and other new features are retained. The sidebar a mark was removed and the hide action moved above the wordmark. All 33 browser scenario groups passed again, including restored controls, drag/drop, notes, Viewer restrictions and seven viewport widths. Production remains unchanged.
+Whole-card click and keyboard opening, explicit card Edit buttons, and completed tasks on member tabs were restored after comparison with the original repository. The user confirmed these were the missing behaviors. Timestamps and other new features are retained. The sidebar a mark was removed and the hide action moved above the wordmark. The new workflow code passed 48 automated tests and the static-site build before publication. Production keeps shared-name access; the staff password flow is deferred.
