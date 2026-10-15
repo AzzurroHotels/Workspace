@@ -1,66 +1,148 @@
-// Per-record writes avoid overwriting other team members' unrelated changes.
+// Public-key REST adapter. Authorization must be enforced by Supabase RLS.
 window.FormaStore = (() => {
   const config = window.FORMA_CONFIG || {};
   const enabled = Boolean(config.supabaseUrl && config.supabasePublishableKey);
+  const fields = {
+    members: ['id', 'name', 'role'],
+    trackers: ['id', 'name', 'url'],
+    tasks: ['id', 'title', 'description', 'member_id', 'status', 'due', 'priority', 'latest_note', 'note_updated_at']
+  };
+  let snapshots = new Map();
+
   async function request(path, method = 'GET', body) {
-    const response = await fetch(config.supabaseUrl.replace(/\/$/, '') + '/rest/v1/' + path, {
-      method,
-      headers: { apikey: config.supabasePublishableKey, 'Content-Type': 'application/json', 'x-board-actor': encodeURIComponent(window.boardActorName ? window.boardActorName() : 'Unknown'), Prefer: 'return=representation' },
-      signal: AbortSignal.timeout(20000),
-      ...(body === undefined ? {} : { body: JSON.stringify(body) })
-    });
+    const sharedEntry = config.accessMode === 'shared-name';
+    const accessToken = sharedEntry ? config.supabasePublishableKey : await window.WorkspaceAuth.token();
+    let response;
+    try {
+      response = await fetch(config.supabaseUrl.replace(/\/$/, '') + '/rest/v1/' + path, {
+        method,
+        headers: {
+          apikey: config.supabasePublishableKey,
+          Authorization: 'Bearer ' + accessToken,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+          ...(sharedEntry ? { 'x-board-actor': encodeURIComponent(String(window.boardActorName?.() || 'Unknown').trim().slice(0, 70)) } : {})
+        },
+        signal: AbortSignal.timeout(20000),
+        ...(body === undefined ? {} : { body: JSON.stringify(body) })
+      });
+    } catch (error) {
+      throw new Error(error.name === 'TimeoutError' ? 'The request timed out. Check the workspace before retrying.' : 'The connection was interrupted. Check the workspace before retrying.');
+    }
     if (!response.ok) {
       let error;
       try { error = await response.json(); } catch { error = {}; }
       throw new Error(error.message || `Database request failed (${response.status})`);
     }
-    return response.status === 204 ? null : response.json();
+    if (response.status === 204) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error('The workspace returned an unexpected response.');
+    return data;
   }
+
   async function allRows(path) {
-    const rows = [];
-    for (let offset = 0; ; offset += 500) {
-      const page = await request(`${path}&limit=500&offset=${offset}`);
-      rows.push(...page);
-      if (page.length < 500) return rows;
+    const rows = [], seen = new Set();
+    // Advance by the actual page size: the project may cap responses below 500.
+    for (;;) {
+      const page = await request(`${path}&limit=500&offset=${rows.length}`);
+      if (!page.length) return rows;
+      for (const row of page) {
+        if (!row.id || seen.has(row.id)) throw new Error('Workspace changed during loading. Please refresh.');
+        seen.add(row.id);
+        rows.push(row);
+      }
     }
   }
+
   async function load() {
-    const [members, tasks, activity] = await Promise.all([
+    const [members, tasks, activity, trackers] = await Promise.all([
       allRows('board_members?select=*&order=created_at.asc,id.asc'),
       allRows('board_tasks?select=*&order=created_at.asc,id.asc'),
-      allRows('board_activity?select=*&order=created_at.desc,id.desc')
+      allRows('board_activity?select=*&order=created_at.desc,id.desc'),
+      allRows('board_trackers?select=*&order=created_at.asc,id.asc')
     ]);
-    return { activity, members: members.map(({ id, name, role }) => ({ id, name, role })),
-      tasks: tasks.map(({ id, title, description, member_id, status, due, priority, latest_note, note_updated_at }) =>
-        ({ id, title, description, memberId: member_id || '', status, due, priority, latest_note: latest_note || '', note_updated_at: note_updated_at || null })) };
+    snapshots = new Map([
+      ...members.map(row => [`members:${row.id}`, row]),
+      ...tasks.map(row => [`tasks:${row.id}`, row]),
+      ...trackers.map(row => [`trackers:${row.id}`, row])
+    ]);
+    return {
+      activity, trackers: trackers.map(({ id, name, url }) => ({ id, name, url })),
+      members: members.map(({ id, name, role }) => ({ id, name, role })),
+      tasks: tasks.map(({ id, title, description, member_id, status, due, priority, latest_note, note_updated_at }) => ({
+        id, title, description: description || '', memberId: member_id || '', status, due, priority,
+        latest_note: latest_note || '', note_updated_at: note_updated_at || null
+      }))
+    };
   }
+
+  function toRow(collection, item) {
+    const source = { ...item, member_id: item.memberId || null };
+    return Object.fromEntries(fields[collection].filter(key => source[key] !== undefined).map(key => [key, source[key]]));
+  }
+
+  function equals(value) {
+    // Simple eq filters take a literal value. URLSearchParams safely encodes it;
+    // quoting it here would compare the quote characters as part of the text.
+    return value == null ? 'is.null' : 'eq.' + String(value);
+  }
+
+  function guardedPath(table, collection, old, keys) {
+    const original = snapshots.get(`${collection}:${old.id}`) || toRow(collection, old);
+    const query = new URLSearchParams({ id: `eq.${old.id}` });
+    for (const key of keys) if (key !== 'id') query.set(key, equals(original[key]));
+    return `${table}?${query}`;
+  }
+
   async function save(before, after) {
-    // Members first so new task assignments have valid foreign keys.
-    for (const [collection, table] of [['members', 'board_members'], ['tasks', 'board_tasks']]) {
-      for (const item of after[collection]) {
-        const old = before[collection].find(x => x.id === item.id);
-        const row = collection === 'tasks' ? { ...item, member_id: item.memberId || null } : { ...item };
-        delete row.memberId;
-        if (!old) await request(table, 'POST', row);
-        else {
-          const changes = {};
-          for (const key of Object.keys(item)) {
-            if (key !== 'id' && item[key] !== old[key]) {
-              changes[key === 'memberId' ? 'member_id' : key] = key === 'memberId' ? item[key] || null : item[key];
-            }
-          }
+    const removedMembers = new Set(before.members.filter(person => !after.members.some(next => next.id === person.id)).map(person => person.id));
+    let writes = 0;
+    try {
+      for (const [collection, table] of [['members', 'board_members'], ['tasks', 'board_tasks'], ['trackers', 'board_trackers']]) {
+        for (const item of (after[collection] || [])) {
+          const old = (before[collection] || []).find(row => row.id === item.id);
+          const row = toRow(collection, item);
+          if (!old) { await request(table, 'POST', row); writes++; continue; }
+          const previous = toRow(collection, old);
+          const changes = Object.fromEntries(Object.entries(row).filter(([key, value]) => key !== 'id' && value !== previous[key]));
+          // The existing ON DELETE SET NULL foreign key unassigns these atomically.
+          // A concurrent reassignment must not be overwritten by a separate PATCH.
+          if (collection === 'tasks' && changes.member_id === null && removedMembers.has(previous.member_id)) delete changes.member_id;
           if (Object.keys(changes).length) {
-            const result = await request(`${table}?id=eq.${encodeURIComponent(item.id)}`, 'PATCH', changes);
-            if (!result.length) throw new Error('This record was removed by another team member. Refresh and try again.');
+            const result = await request(guardedPath(table, collection, old, Object.keys(changes)), 'PATCH', changes);
+            if (!result.length) throw new Error('This record changed or was removed by someone else. Review the latest values before saving again.');
+            writes++;
           }
         }
       }
-    }
-    for (const [collection, table] of [['tasks', 'board_tasks'], ['members', 'board_members']]) {
-      for (const item of before[collection]) {
-        if (!after[collection].some(x => x.id === item.id)) await request(`${table}?id=eq.${encodeURIComponent(item.id)}`, 'DELETE');
+      // Explicit reassignments happen first; the FK handles remaining assignments.
+      for (const [collection, table] of [['tasks', 'board_tasks'], ['members', 'board_members'], ['trackers', 'board_trackers']]) {
+        for (const item of (before[collection] || [])) {
+          if ((after[collection] || []).some(row => row.id === item.id)) continue;
+          const result = await request(guardedPath(table, collection, item, fields[collection]), 'DELETE');
+          if (!result.length) throw new Error('This record changed or was removed by someone else. Refresh before deleting it.');
+          writes++;
+        }
       }
+    } catch (error) {
+      error.partial = writes > 0;
+      throw error;
     }
   }
-  return { enabled, load, save };
+  async function users() {
+    const rows = []; let page;
+    do { page = await request('workspace_access?select=email,display_name,role,created_at&order=email.asc&limit=500&offset=' + rows.length); rows.push(...page); } while (page.length);
+    return rows;
+  }
+  async function saveUser(user, original) {
+    const body = { display_name: user.display_name, role: user.role };
+    const query = original ? new URLSearchParams({ email: equals(original.email), role: equals(original.role), display_name: equals(original.display_name) }) : null;
+    const result = await request('workspace_access' + (query ? '?' + query : ''), original ? 'PATCH' : 'POST', original ? body : { ...body, email: user.email });
+    if (!result.length) throw new Error('User access changed. Refresh Users and try again.');
+  }
+  async function removeUser(user) {
+    const result = await request('workspace_access?' + new URLSearchParams({ email: equals(user.email), role: equals(user.role), display_name: equals(user.display_name) }), 'DELETE');
+    if (!result.length) throw new Error('User access changed. Refresh Users and try again.');
+  }
+  return { enabled, load, save, users, saveUser, removeUser };
 })();
