@@ -5,7 +5,7 @@ Supabase project: `iunkhgyoujdxybufjcgo`.
 
 ## Operations workflow release - 15 October 2026
 
-Status: the additive Supabase migration is applied. The approved source is on `enhance/operations-recurring-purchases`; publishing it to `main` updates the existing GitHub Pages site.
+Status: published to the existing GitHub Pages site from `main`. GitHub reports deployment `7084073828` succeeded for commit `139759c`. The live page serves cache version `20261015.6`, and the additive Supabase migration is applied.
 
 Includes Operations rename, separate Onsite Maintenance board, daily/weekly recurring schedules with due colors and sidebar counts, and Purchase List with reversible purchased status. Cache version is `20261015.6`.
 
