@@ -1,3 +1,48 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Azzurro Workspace</title><link rel="stylesheet" href="style.css"></head>
-<body><aside><a class="brand" href="#">▧ <b>Azzurro</b><span>WORKSPACE</span></a><div class="workspace">A <div>Azzurro Workspace<small>Project management</small></div></div><p class="label">WORKSPACE</p><nav><button data-view="dashboard">◫ &nbsp; Dashboard</button><button data-view="board">▥ &nbsp; Task boards</button><button data-view="members">♧ &nbsp; Team members</button></nav></aside><main><header><div>Workspace <span>/</span> <b id="breadcrumb">Dashboard</b></div><div class="header-right"><div id="visitor-bar"></div><span id="date"></span><span class="avatar">AR</span></div></header><section id="content"></section><footer>Azzurro Workspace <span>Keep the work moving.</span></footer></main><dialog id="editor"></dialog><div id="toast" role="status"></div><script src="config.js"></script><script src="store.js"></script><script src="app.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3eddf">
+  <meta name="description" content="Azzurro Workspace — tasks, people, and progress in one place.">
+  <title>Azzurro Workspace</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <aside id="workspace-sidebar" aria-label="Workspace navigation">
+    <div id="sidebar-toggle-home" class="sidebar-controls"><button id="sidebar-toggle" class="icon-button" aria-controls="workspace-sidebar" aria-expanded="true" aria-label="Hide sidebar"></button></div>
+    <a class="brand" href="#dashboard" aria-label="Azzurro Workspace home"><span><b>Azzurro</b><small>WORKSPACE</small></span></a>
+    <div class="workspace"><span class="workspace-mark" aria-hidden="true">AW</span><div>Azzurro Workspace<small>People. Projects. Progress.</small></div></div>
+    <p class="nav-label">Workspace</p>
+    <nav aria-label="Main">
+      <button data-view="dashboard"><span data-nav-icon="dashboard"></span> Dashboard</button>
+      <button data-view="board"><span data-nav-icon="board"></span> Task boards</button>
+      <button data-view="trackers"><span data-nav-icon="folder"></span> Trackers</button>
+      <button data-view="members"><span data-nav-icon="people"></span> Team members</button>
+      <button data-view="users" hidden><span data-nav-icon="users"></span> Users</button>
+    </nav>
+    <div class="aside-bottom"><span class="paper-stamp">Azzurro Hotels</span><b>Good work.<br>One day at a time.</b><small>Team workspace · Sydney time</small></div>
+  </aside>
+  <main>
+    <header>
+      <div class="header-left"><div id="sidebar-reopen" hidden></div><div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <b id="breadcrumb">Dashboard</b></div></div>
+      <div class="header-right"><span id="date"></span><div id="visitor-bar"></div></div>
+    </header>
+    <section id="content" tabindex="-1" aria-label="Workspace content"></section>
+    <footer><span>Azzurro Workspace</span><span id="connection-status" role="status" aria-live="polite"></span></footer>
+  </main>
+  <dialog id="editor" aria-labelledby="dialog-title"></dialog>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+  <noscript>This workspace needs JavaScript to display tasks and save changes.</noscript>
+  <script src="config.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="store.js"></script>
+  <script src="ui.js"></script>
+  <script src="trackers.js"></script>
+  <script src="access-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

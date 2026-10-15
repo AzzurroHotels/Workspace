@@ -1,0 +1,26 @@
+{
+  "name": "azzurro-workspace",
+  "private": true,
+  "version": "1.1.0",
+  "description": "Azzurro team workspace — static web application",
+  "scripts": {
+    "start": "node scripts/dev-server.mjs",
+    "demo": "node scripts/dev-server.mjs --demo",
+    "start:shared": "node scripts/dev-server.mjs --shared",
+    "test": "node --test tests/*.test.cjs",
+    "test:ui": "node tests/ui.cjs",
+    "check": "node --check app.js && node --check store.js && node --check auth.js && node --check access-ui.js && node --check ui.js && node --check trackers.js",
+    "build": "esbuild scripts/auth-sdk-entry.js --bundle --platform=browser --format=iife --global-name=supabase --minify --outfile=vendor/supabase.js",
+    "test:access-ui": "node tests/auth-ui.cjs",
+    "build:site": "npm run build && node scripts/package-site.mjs"
+  },
+  "dependencies": {
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@supabase/supabase-js": "^2.117.3"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "esbuild": "^0.28.2"
+  }
+}

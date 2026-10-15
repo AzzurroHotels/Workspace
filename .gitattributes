@@ -1,0 +1,2 @@
+# Preserve generated SDK text, including whitespace inside embedded strings.
+vendor/supabase.js -whitespace linguist-vendored
