@@ -19,9 +19,11 @@ with sync_playwright() as p:
         assert page.locator('nav button:visible').all_text_contents()==[' Dashboard',' Recurring tasks',' Operations',' Onsite Maintenance',' Trackers',' Purchase List',' Team members',' Users']
         before=page.evaluate('JSON.stringify(state.tasks)')
         page.locator('[data-view="maintenance"]').click();expect(page.locator('.card')).to_have_count(0)
-        page.locator('#add-task').click();page.locator('#title').fill('Replace corridor light');page.locator('#description').fill('Second floor · check the fitting before ordering.')
+        page.locator('#add-task').click();page.locator('#title').fill('Replace corridor light');page.locator('#maintenance-property').select_option('Allen');page.locator('#maintenance-location').fill('Room 204');page.locator('#description').fill('Second floor · check the fitting before ordering.')
         page.locator('#latest-note').fill('Inspection requested');page.locator('#task-form button[type=submit]').click()
         expect(page.locator('.card')).to_have_count(1);expect(page.locator('.note-time')).to_contain_text('Update added on')
+        expect(page.locator('.card .maintenance-place')).to_contain_text('Allen · Room 204');expect(page.locator('.card .task-created')).to_contain_text('Added Thu, 15 Oct 2026')
+        assert page.evaluate('state.tasks.find(t => t.title === "Replace corridor light").created_at')
         page.locator('.card [data-notes]').click();page.locator('#note-text').fill('Replacement bulb collected');page.locator('#notes-form button[type=submit]').click()
         expect(page.locator('.card')).to_contain_text('Replacement bulb collected')
         page.locator('[data-layout="list"]').click();expect(page.locator('.task-table tbody tr')).to_have_count(1)
@@ -88,9 +90,11 @@ with sync_playwright() as p:
             for view in ['recurring','maintenance','purchases']:
                 page.locator('[data-view="'+view+'"]').click()
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), f'{view} overflow {width}'
-            for view,button,form in [('recurring','#add-recurring','#routine-form'),('purchases','#add-purchase','#purchase-form')]:
+            for view,button,form in [('recurring','#add-recurring','#routine-form'),('maintenance','#add-task','#task-form'),('purchases','#add-purchase','#purchase-form')]:
                 page.locator('[data-view="'+view+'"]').click();page.locator(button).click()
                 assert page.locator('#editor').evaluate('(el)=>el.scrollWidth <= el.clientWidth+1'), f'{form} overflow {width}'
+                if view=='maintenance':
+                    assert page.locator('#maintenance-property').is_visible() and page.locator('#maintenance-location').is_visible()
                 page.locator('#cancel').click()
         passed('New tabs and editors fit seven desktop, tablet and phone widths without horizontal page overflow')
         page.set_viewport_size({'width':1440,'height':1050});page.locator('[data-view="recurring"]').click();page.locator('#sidebar-toggle').click()

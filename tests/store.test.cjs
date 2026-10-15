@@ -100,6 +100,25 @@ test('only whitelisted task fields are sent to the backend', async () => {
   const post = JSON.parse(calls.find(call => call.method === 'POST').body);
   assert.equal(post.injected, undefined); assert.equal(post.memberId, undefined); assert.equal(post.member_id, member.id);
 });
+test('maintenance place fields round-trip while creation time remains server-generated', async () => {
+  const original = { ...task, area: 'maintenance', maintenance_property: 'Central', maintenance_location: 'Room 204' };
+  const { store, calls } = setup({ data: { board_tasks: [original] }, handle: () => response([original]) });
+  const before = await store.load();
+  assert.equal(before.tasks[0].maintenance_property, 'Central');
+  assert.equal(before.tasks[0].maintenance_location, 'Room 204');
+  assert.equal(before.tasks[0].created_at, original.created_at);
+  const after = clone(before);
+  after.tasks[0].maintenance_location = 'Room 205';
+  after.tasks.push({ ...after.tasks[0], id: 'maintenance-2', maintenance_property: 'Olympic', maintenance_location: 'Laundry', created_at: '2026-10-15T04:00:00Z' });
+  await store.save(before, after);
+  const patch = calls.find(call => call.table === 'board_tasks' && call.method === 'PATCH');
+  assert.equal(patch.query.get('maintenance_location'), 'eq.Room 204');
+  assert.deepEqual(JSON.parse(patch.body), { maintenance_location: 'Room 205' });
+  const post = JSON.parse(calls.find(call => call.table === 'board_tasks' && call.method === 'POST').body);
+  assert.equal(post.maintenance_property, 'Olympic');
+  assert.equal(post.maintenance_location, 'Laundry');
+  assert.equal(post.created_at, undefined);
+});
 test('literal equality filters preserve punctuation without changing the query', async () => {
   const title = 'A "quoted", (test) & \\ work';
   const { store, calls } = setup({ data: { board_tasks: [{ ...task, title }] }, handle: () => response([task]) });

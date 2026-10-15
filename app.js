@@ -3,6 +3,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&a
 const statuses = ['New', 'In progress', 'For Review', 'Completed'];
 const roles = ['Dev', 'ProB', 'Admin'];
 const priorities = ['Normal', 'High'];
+const maintenanceProperties = ['Allen', 'Central', 'Potts Point', 'Olympic'];
 const emptyState = () => ({ members: [], tasks: [], trackers: [], recurring: [], completions: [], purchases: [], activity: [] });
 const storage = {
   get(type, key) { try { return window[type].getItem(key); } catch { return null; } },
@@ -15,6 +16,16 @@ const offset = days => { const date = new Date(today() + 'T12:00:00'); date.setD
 const initials = name => String(name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => [...part][0]).join('').toUpperCase() || '—';
 const dateLabel = (date, full = false) => date ? new Date(date + 'T12:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', ...(full ? { year: 'numeric' } : {}) }) : 'No due date';
 const timestamp = date => date ? new Date(date).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' }) : 'Not recorded';
+const taskCreatedLabel = date => date && !Number.isNaN(new Date(date).getTime()) ? new Date(date).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+const taskCreatedMarkup = task => {
+  const label = taskCreatedLabel(task.created_at);
+  return task.area === 'maintenance' && label ? `<div class="task-created"><time datetime="${esc(task.created_at)}">Added ${esc(label)} · Sydney</time></div>` : '';
+};
+const maintenancePlaceMarkup = task => {
+  if (task.area !== 'maintenance') return '';
+  const parts = [task.maintenance_property, task.maintenance_location].filter(Boolean);
+  return parts.length ? `<p class="maintenance-place">${esc(parts.join(' · '))}</p>` : '';
+};
 
 let visitorName = demoMode ? 'Demo administrator' : sharedNameMode ? String(storage.get('sessionStorage', 'forma-visitor') || '').trim().slice(0, 70) : '';
 window.boardActorName = () => visitorName;
@@ -214,7 +225,7 @@ function filteredTasks() {
   const needle = query.trim().toLowerCase();
   return state.tasks.filter(task => (task.area || 'operations') === (view === 'maintenance' ? 'maintenance' : 'operations') && (selected === 'all' || (selected === 'unassigned' ? !task.memberId : task.memberId === selected)) &&
     (scope === 'all' || scope === 'active' && task.status !== 'Completed' || scope === 'completed' && task.status === 'Completed' || scope === 'overdue' && overdue(task)) &&
-    [task.title, task.description, task.latest_note, member(task.memberId)?.name].some(value => String(value || '').toLowerCase().includes(needle)));
+    [task.title, task.description, task.latest_note, task.maintenance_property, task.maintenance_location, member(task.memberId)?.name].some(value => String(value || '').toLowerCase().includes(needle)));
 }
 function sortTasks(a, b) { return String(a.due || '9999').localeCompare(String(b.due || '9999')) || a.title.localeCompare(b.title); }
 function board() {
@@ -236,7 +247,7 @@ function columns() {
   const tasks = filteredTasks().sort(sortTasks);
   if (taskView === 'list') taskList(tasks);
   else {
-    $('#columns').innerHTML = `<div class="board">${statuses.map(status => `<div class="column" data-status="${status}" aria-label="${status} tasks"><div class="column-title"><i class="dot" aria-hidden="true"></i>${status}<span>${tasks.filter(task => task.status === status).length}</span></div>${tasks.filter(task => task.status === status).map(task => `<article class="card" draggable="${isAdmin()}" tabindex="0" aria-label="Open ${esc(task.title)}" data-id="${esc(task.id)}"><div class="card-head">${priorityBadge(task.priority)}<span class="avatar" title="${esc(member(task.memberId)?.name || 'Unassigned')}" aria-label="Assigned to ${esc(member(task.memberId)?.name || 'Unassigned')}">${esc(initials(member(task.memberId)?.name))}</span></div><h3><button class="task-title" data-task="${esc(task.id)}">${esc(task.title)}</button></h3><p class="latest-note">${esc(task.latest_note || task.description || 'No updates yet')}</p>${noteMeta(task)}<div class="card-bottom"><span class="${overdue(task) ? 'overdue' : ''}">◷ ${esc(dateLabel(task.due))}${overdue(task) ? ' · Overdue' : ''}</span><span>${esc(member(task.memberId)?.name.split(' ')[0] || 'Unassigned')}</span></div><div class="card-footer">${statusPicker(task)}<div class="card-actions">${isAdmin() ? `<button class="secondary" data-edit-task="${esc(task.id)}" aria-label="Edit ${esc(task.title)}">Edit</button>` : ''}<button class="secondary" data-notes="${esc(task.id)}">Notes</button></div></div></article>`).join('') || `<div class="empty">${status === 'Completed' && scope === 'active' ? 'Choose All tasks to see completed work.' : query ? 'No matching tasks' : 'No tasks here yet'}</div>`}</div>`).join('')}</div>`;
+    $('#columns').innerHTML = `<div class="board">${statuses.map(status => `<div class="column" data-status="${status}" aria-label="${status} tasks"><div class="column-title"><i class="dot" aria-hidden="true"></i>${status}<span>${tasks.filter(task => task.status === status).length}</span></div>${tasks.filter(task => task.status === status).map(task => `<article class="card" draggable="${isAdmin()}" tabindex="0" aria-label="Open ${esc(task.title)}" data-id="${esc(task.id)}"><div class="card-head">${priorityBadge(task.priority)}<span class="avatar" title="${esc(member(task.memberId)?.name || 'Unassigned')}" aria-label="Assigned to ${esc(member(task.memberId)?.name || 'Unassigned')}">${esc(initials(member(task.memberId)?.name))}</span></div><h3><button class="task-title" data-task="${esc(task.id)}">${esc(task.title)}</button></h3><p class="latest-note">${esc(task.latest_note || task.description || 'No updates yet')}</p>${maintenancePlaceMarkup(task)}${noteMeta(task)}<div class="card-bottom"><span class="${overdue(task) ? 'overdue' : ''}">◷ ${esc(dateLabel(task.due))}${overdue(task) ? ' · Overdue' : ''}</span><span>${esc(member(task.memberId)?.name.split(' ')[0] || 'Unassigned')}</span></div>${taskCreatedMarkup(task)}<div class="card-footer">${statusPicker(task)}<div class="card-actions">${isAdmin() ? `<button class="secondary" data-edit-task="${esc(task.id)}" aria-label="Edit ${esc(task.title)}">Edit</button>` : ''}<button class="secondary" data-notes="${esc(task.id)}">Notes</button></div></div></article>`).join('') || `<div class="empty">${status === 'Completed' && scope === 'active' ? 'Choose All tasks to see completed work.' : query ? 'No matching tasks' : 'No tasks here yet'}</div>`}</div>`).join('')}</div>`;
     document.querySelectorAll('.card').forEach(card => {
       let dragged = false;
       const isControl = target => target.closest('button,select,input,textarea,a,[contenteditable]');
@@ -279,7 +290,7 @@ async function updateStatus(id, status) {
   $(`[data-task-status="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
 }
 function taskList(tasks) {
-  $('#columns').innerHTML = `<div class="panel task-table-wrap"><table class="task-table"><caption class="table-caption">${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'} · ${esc($('#scope').selectedOptions[0].textContent)}</caption><thead><tr>${['Task', 'Status', 'Assignee', 'Due date', 'Priority', 'Notes'].map(label => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${tasks.map(task => `<tr><td data-label="Task"><button class="task-title" data-task="${esc(task.id)}">${esc(task.title)}</button><small class="task-description latest-note">${esc(task.latest_note || task.description || 'No updates yet')}</small>${noteMeta(task)}</td><td data-label="Status">${statusPicker(task)}</td><td data-label="Assignee">${esc(member(task.memberId)?.name || 'Unassigned')}</td><td data-label="Due date"><time class="${overdue(task) ? 'overdue' : ''}" datetime="${esc(task.due)}">${esc(dateLabel(task.due, true))}</time>${overdue(task) ? '<small class="overdue">Overdue</small>' : ''}</td><td data-label="Priority">${priorityBadge(task.priority)}</td><td data-label="Notes"><button class="secondary" data-notes="${esc(task.id)}" aria-label="Notes for ${esc(task.title)}">Notes</button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">No tasks match these filters. Try another scope or search.</td></tr>'}</tbody></table></div>`;
+  $('#columns').innerHTML = `<div class="panel task-table-wrap"><table class="task-table"><caption class="table-caption">${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'} · ${esc($('#scope').selectedOptions[0].textContent)}</caption><thead><tr>${['Task', 'Status', 'Assignee', 'Due date', 'Priority', 'Notes'].map(label => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${tasks.map(task => `<tr><td data-label="Task"><button class="task-title" data-task="${esc(task.id)}">${esc(task.title)}</button><small class="task-description latest-note">${esc(task.latest_note || task.description || 'No updates yet')}</small>${maintenancePlaceMarkup(task)}${taskCreatedMarkup(task)}${noteMeta(task)}</td><td data-label="Status">${statusPicker(task)}</td><td data-label="Assignee">${esc(member(task.memberId)?.name || 'Unassigned')}</td><td data-label="Due date"><time class="${overdue(task) ? 'overdue' : ''}" datetime="${esc(task.due)}">${esc(dateLabel(task.due, true))}</time>${overdue(task) ? '<small class="overdue">Overdue</small>' : ''}</td><td data-label="Priority">${priorityBadge(task.priority)}</td><td data-label="Notes"><button class="secondary" data-notes="${esc(task.id)}" aria-label="Notes for ${esc(task.title)}">Notes</button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">No tasks match these filters. Try another scope or search.</td></tr>'}</tbody></table></div>`;
 }
 
 function members() {
@@ -316,7 +327,7 @@ function notePreview(task) {
 }
 function activityHTML(taskId) {
   const entries = (state.activity || []).filter(entry => entry.entity === 'tasks' && entry.record_id === taskId);
-  const labels = { latest_note: 'Note', status: 'Status', title: 'Title', description: 'Description', memberId: 'Assignee', member_id: 'Assignee', due: 'Due date', priority: 'Priority' };
+  const labels = { latest_note: 'Note', status: 'Status', title: 'Title', description: 'Description', memberId: 'Assignee', member_id: 'Assignee', due: 'Due date', priority: 'Priority', maintenance_property: 'Property', maintenance_location: 'Room or place' };
   return `<div class="activity-history" tabindex="0" aria-label="Task update history"><h3>Update history</h3>${entries.map(entry => `<article><b>${esc(entry.actor_name || 'Unknown')}</b><time>${esc(timestamp(entry.created_at))} · Sydney</time><p>${entry.action === 'INSERT' ? 'Task created' : entry.action === 'DELETE' ? 'Task deleted' : entry.changes?.latest_note ? 'Added an update' : 'Task updated'}</p>${Object.entries(entry.changes || {}).filter(([key]) => labels[key]).map(([key, value]) => `<p><strong>${labels[key]}:</strong> ${esc(['memberId', 'member_id'].includes(key) ? member(value?.to)?.name || (value?.to ? 'Former member' : 'Unassigned') : value?.to ?? '—')}</p>`).join('')}</article>`).join('') || '<p class="note">No recorded updates yet.</p>'}</div>`;
 }
 function taskEditor(id) {
@@ -324,10 +335,17 @@ function taskEditor(id) {
   if (!canEdit()) return;
   const current = id ? state.tasks.find(task => task.id === id) : null;
   if (id && !current) { toast('This task no longer exists.', true); return; }
+  const maintenance = (current?.area || (view === 'maintenance' ? 'maintenance' : 'operations')) === 'maintenance';
   const original = current ? structuredClone(current) : null;
   // Keep creation IDs stable if a request commits but its response is lost.
   const draftId = current?.id || crypto.randomUUID();
   openDialog(`<form id="task-form"><h2 id="dialog-title">${current ? 'Edit task' : 'Create a task'}</h2><p class="subtitle">${(current?.area || (view === 'maintenance' ? 'maintenance' : 'operations')) === 'maintenance' ? 'Onsite Maintenance' : 'Operations'} · Clear details make the next step easier.</p><label for="title">Task title</label><input id="title" name="title" required maxlength="120" value="${esc(current?.title || '')}" placeholder="What needs to be done?"><label for="description">Description</label><textarea id="description" name="description" maxlength="10000" placeholder="Add context, details, or links…">${esc(current?.description || '')}</textarea><div class="form-row"><div><label for="assignee">Assigned to</label><select id="assignee" name="memberId"><option value="">Unassigned</option>${state.members.map(person => `<option value="${esc(person.id)}" ${(current ? current.memberId : !['all', 'unassigned'].includes(selected) ? selected : '') === person.id ? 'selected' : ''}>${esc(person.name)}</option>`).join('')}</select></div><div><label for="due">Due date · Sydney</label><input id="due" type="date" name="due" required value="${esc(current?.due || today())}"></div></div><div class="form-row"><div><label for="status">Status</label><select id="status" name="status">${statuses.map(status => `<option ${current?.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></div><div><label for="priority">Priority</label><select id="priority" name="priority">${priorities.map(priority => `<option ${current?.priority === priority ? 'selected' : ''}>${priority}</option>`).join('')}</select></div></div><div id="note-preview">${current ? notePreview(current) : ''}</div><label for="latest-note">Add an update</label><textarea id="latest-note" name="note" maxlength="3000" placeholder="What’s the latest on this task?"></textarea><small>Leave blank to keep the current note.</small>${current ? '<button type="button" class="secondary save-note-button" id="save-task-note">Save note only</button><div id="task-history"></div>' : ''}<div class="actions">${current ? '<button type="button" class="danger" id="delete-task">Delete task</button>' : ''}<button type="button" class="secondary" id="cancel">Cancel</button><button class="primary" type="submit">Save task</button></div></form>`);
+  if (maintenance) {
+    const fields = document.createElement('div');
+    fields.className = 'form-row onsite-fields';
+    fields.innerHTML = `<div><label for="maintenance-property">Property</label><select id="maintenance-property" name="maintenance_property" ${current ? '' : 'required'}><option value="">Choose a property</option>${maintenanceProperties.map(property => `<option value="${esc(property)}" ${current?.maintenance_property === property ? 'selected' : ''}>${esc(property)}</option>`).join('')}</select></div><div><label for="maintenance-location">Room or place details</label><input id="maintenance-location" name="maintenance_location" maxlength="160" value="${esc(current?.maintenance_location || '')}" placeholder="e.g. Room 204 or rear courtyard"></div>`;
+    $('#title').insertAdjacentElement('afterend', fields);
+  }
   if (current) {
     $('#task-history').innerHTML = activityHTML(id);
     $('#save-task-note').onclick = async () => {
@@ -352,7 +370,7 @@ function taskEditor(id) {
     const note = data.note.trim(); delete data.note;
     const existingTask = state.tasks.find(task => task.id === draftId);
     if (current && !existingTask) { toast('This task no longer exists.', true); return; }
-    const task = existingTask || { id: draftId, area: view === 'maintenance' ? 'maintenance' : 'operations', latest_note: '', note_updated_at: null };
+    const task = existingTask || { id: draftId, area: maintenance ? 'maintenance' : 'operations', latest_note: '', note_updated_at: null, created_at: new Date().toISOString() };
     // A separate note save reloads current data. Preserve fields the editor has not changed.
     for (const [key, value] of Object.entries(data)) if (!original || value !== (original[key] ?? '')) task[key] = value;
     if (note) { task.latest_note = note; task.note_updated_at = new Date().toISOString(); }
@@ -420,7 +438,7 @@ function taskExportText(tasks) {
   for (const [id, tasks] of [...groups].sort(([a], [b]) => (member(a)?.name || 'Unassigned').localeCompare(member(b)?.name || 'Unassigned'))) {
     lines.push('='.repeat(54), `NAME: ${member(id)?.name || 'Unassigned'}`, `ROLE: ${member(id)?.role || '—'}`, `TASKS: ${tasks.length}`, '='.repeat(54), '');
     tasks.sort(sortTasks).forEach((task, index) => {
-      lines.push(`${index + 1}. ${task.title}`, `Status: ${task.status}`, `Due date: ${task.due || 'Not set'}`, `Priority: ${task.priority}`, `Description: ${task.description || '—'}`, `Latest note: ${task.latest_note || 'No notes yet'}`);
+      lines.push(`${index + 1}. ${task.title}`, `Status: ${task.status}`, `Due date: ${task.due || 'Not set'}`, `Priority: ${task.priority}`, ...(task.area === 'maintenance' ? [`Property: ${task.maintenance_property || 'Not set'}`, `Room or place: ${task.maintenance_location || 'Not set'}`, `Added: ${taskCreatedLabel(task.created_at) || 'Not recorded'} (Sydney)`] : []), `Description: ${task.description || '—'}`, `Latest note: ${task.latest_note || 'No notes yet'}`);
       if (task.latest_note) {
         const entry = state.activity.filter(entry => entry.entity === 'tasks' && entry.record_id === task.id && entry.changes?.latest_note?.to === task.latest_note).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))[0];
         lines.push(`Updated by: ${entry?.actor_name || 'Not recorded'}`, `Updated at: ${timestamp(entry?.created_at || task.note_updated_at)} (Sydney)`);

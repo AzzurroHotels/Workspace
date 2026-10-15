@@ -8,7 +8,7 @@ window.FormaStore = (() => {
     recurring: ['id','title','category','notes','frequency','weekday','time','start_date','paused'],
     completions: ['id','recurring_id','occurrence','completed_at'],
     purchases: ['id','title','quantity','category','notes','priority','status','purchased_at'],
-    tasks: ['id', 'area', 'title', 'description', 'member_id', 'status', 'due', 'priority', 'latest_note', 'note_updated_at']
+    tasks: ['id', 'area', 'title', 'description', 'member_id', 'status', 'due', 'priority', 'latest_note', 'note_updated_at', 'maintenance_property', 'maintenance_location']
   };
   let snapshots = new Map();
 
@@ -79,9 +79,10 @@ window.FormaStore = (() => {
       // UI edits must never mutate the original values used by concurrency guards.
       activity, recurring: recurring.map(row => ({ ...row })), completions: completions.map(row => ({ ...row })), purchases: purchases.map(row => ({ ...row })), trackers: trackers.map(({ id, name, url }) => ({ id, name, url })),
       members: members.map(({ id, name, role }) => ({ id, name, role })),
-      tasks: tasks.map(({ id, area, title, description, member_id, status, due, priority, latest_note, note_updated_at }) => ({
+      tasks: tasks.map(({ id, area, title, description, member_id, status, due, priority, latest_note, note_updated_at, maintenance_property, maintenance_location, created_at }) => ({
         id, area: area || 'operations', title, description: description || '', memberId: member_id || '', status, due, priority,
-        latest_note: latest_note || '', note_updated_at: note_updated_at || null
+        latest_note: latest_note || '', note_updated_at: note_updated_at || null,
+        maintenance_property: maintenance_property || '', maintenance_location: maintenance_location || '', created_at: created_at || null
       }))
     };
   }

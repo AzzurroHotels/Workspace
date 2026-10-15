@@ -16,6 +16,6 @@ module.exports = () => {
     {id:'p2',title:'Bath towels',quantity:'3 packs',category:'Housekeeping',priority:'Normal',notes:'White cotton · check the current supplier’s sizes.',status:'planned',purchased_at:null},
     {id:'p3',title:'Reception stationery',quantity:'2 boxes',category:'Reception',priority:'Normal',notes:'Pens, markers, and handover notebooks.',status:'purchased',purchased_at:new Date().toISOString()}
   ];
-  data.tasks.push({id:'maintenance-demo',area:'maintenance',title:'Replace corridor light',description:'Second floor · inspect the fitting before ordering.',memberId:'morgan',due:day,priority:'High',status:'In progress',latest_note:'Inspection complete. Replacement bulbs added to Purchase List.',note_updated_at:new Date().toISOString()});
+  data.tasks.push({id:'maintenance-demo',area:'maintenance',title:'Replace corridor light',description:'Second floor · inspect the fitting before ordering.',memberId:'morgan',due:day,priority:'High',status:'In progress',latest_note:'Inspection complete. Replacement bulbs added to Purchase List.',note_updated_at:new Date().toISOString(),maintenance_property:'Central',maintenance_location:'Second-floor corridor',created_at:new Date().toISOString()});
   return data;
 };
