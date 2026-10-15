@@ -52,8 +52,50 @@ test('staff access migration on isolated PostgreSQL', async t => {
       assert.equal((await db.query("SELECT actor_name FROM board_activity WHERE changes->'latest_note'->>'to'='Second shared update'")).rows[0].actor_name,'Unknown');
     } finally { await db.exec('ROLLBACK'); }
   });
-  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261015024100_staff_access.sql'),'utf8'));
-  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261015024101_trackers_and_signup.sql'),'utf8'));
+
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261015040000_operations_workflows.sql'),'utf8'));
+  await t.test('workflow migration preserves every legacy field and defaults existing tasks to operations',async()=>{
+    const after=(await db.query("SELECT jsonb_build_object('tasks',(SELECT jsonb_agg(to_jsonb(t)-'area') FROM board_tasks t),'members',(SELECT jsonb_agg(m) FROM board_members m),'activity',(SELECT jsonb_agg(a) FROM board_activity a)) snapshot")).rows[0].snapshot;
+    assert.deepEqual(after,beforeShared);
+    assert.equal((await db.query('SELECT area FROM board_tasks')).rows[0].area,'operations');
+  });
+  async function workflowTransaction(callback){
+    await db.exec('BEGIN; SET LOCAL ROLE anon');
+    try{await callback();}finally{await db.exec('ROLLBACK');}
+  }
+  const seedRoutine="INSERT INTO board_recurring(id,title,frequency,time,start_date) VALUES('routine','Reception opening','daily','09:00',(now() AT TIME ZONE 'Australia/Sydney')::date)";
+  const completion="INSERT INTO board_completions(id,recurring_id,occurrence,completed_at) VALUES('done','routine',(now() AT TIME ZONE 'Australia/Sydney')::date,'2000-01-01')";
+  await t.test('shared routine completion is timestamped by the server, unique per date, and can be undone',async()=>workflowTransaction(async()=>{
+    await db.exec(seedRoutine);await db.exec(completion);
+    const done=(await db.query('SELECT * FROM board_completions')).rows[0];assert.ok(new Date(done.completed_at).getUTCFullYear()>2000);
+    await db.exec('SAVEPOINT duplicate');
+    await assert.rejects(db.exec(completion.replace("'done'","'second'")),/unique constraint/);await db.exec('ROLLBACK TO duplicate');
+    await db.exec('DELETE FROM board_completions');await db.exec(completion);
+    assert.equal((await db.query("SELECT count(*)::int n FROM board_activity WHERE entity='completions'")).rows[0].n,3);
+  }));
+  await t.test('paused, future and stale-date completions are rejected',async()=>{
+    for(const setup of ["UPDATE board_recurring SET paused=true", "UPDATE board_recurring SET start_date=start_date+1"]){
+      await workflowTransaction(async()=>{await db.exec(seedRoutine);await db.exec(setup);await assert.rejects(db.exec(completion),/unavailable|occurrence changed/);});
+    }
+    await workflowTransaction(async()=>{await db.exec(seedRoutine);await assert.rejects(db.exec(completion.replace("::date,'2000", "::date-1,'2000")),/occurrence changed/);});
+  });
+  await t.test('purchase transitions set, preserve and clear server timestamps',async()=>workflowTransaction(async()=>{
+    await db.exec("INSERT INTO board_purchases(id,title,quantity) VALUES('p','Towels','2 boxes')");
+    await db.exec("UPDATE board_purchases SET status='purchased',purchased_at='2000-01-01' WHERE id='p'");
+    const stamp=(await db.query('SELECT purchased_at FROM board_purchases')).rows[0].purchased_at;
+    assert.ok(new Date(stamp).getUTCFullYear()>2000);
+    await db.exec("UPDATE board_purchases SET notes='Receipt filed',purchased_at='2000-01-01' WHERE id='p'");
+    assert.deepEqual((await db.query('SELECT purchased_at FROM board_purchases')).rows[0].purchased_at,stamp);
+    await db.exec("UPDATE board_purchases SET status='planned' WHERE id='p'");
+    assert.equal((await db.query('SELECT purchased_at FROM board_purchases')).rows[0].purchased_at,null);
+    assert.equal((await db.query("SELECT count(*)::int n FROM board_activity WHERE entity='purchases'")).rows[0].n,4);
+  }));
+  await t.test('schedule checks reject impossible times and weekly definitions',async()=>{
+    for(const change of ["time='24:00'","weekday=7,frequency='weekly'","frequency='weekly',weekday=NULL"])
+      await workflowTransaction(async()=>{await db.exec(seedRoutine);await assert.rejects(db.exec('UPDATE board_recurring SET '+change),/check constraint/);});
+  });
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/deferred/20261015024100_staff_access.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/deferred/20261015024101_trackers_and_signup.sql'),'utf8'));
   await db.exec("INSERT INTO workspace_access(email,display_name,role) VALUES ('viewer@example.com','Viewer','viewer'),('unverified@example.com','Unverified','admin')");
   async function asUser(kind, callback, role = 'authenticated') {
     await db.exec('BEGIN');
@@ -71,6 +113,19 @@ test('staff access migration on isolated PostgreSQL', async t => {
     });
     await t.test('anonymous reads and writes are revoked', async () => {
       for (const sql of ['SELECT * FROM board_tasks',"DELETE FROM board_members",'SELECT * FROM workspace_access']) await asUser(null,async () => assert.rejects(db.exec(sql),/permission denied/),'anon');
+    });
+
+    await t.test('future staff switch closes anonymous access on every new workflow',async()=>{
+      for(const table of ['board_recurring','board_completions','board_purchases']){
+        await asUser(null,async()=>assert.rejects(db.exec('SELECT * FROM '+table),/permission denied/),'anon');
+        await asUser('viewer',async()=>assert.equal((await db.query('DELETE FROM '+table+' RETURNING id')).rows.length,0));
+      }
+      await asUser('viewer',async()=>assert.rejects(db.exec("INSERT INTO board_purchases(id,title) VALUES('bad','Bad')"),/row-level security/));
+      await asUser('admin',async()=>{
+        await db.exec(seedRoutine);await db.exec(completion);
+        await db.exec("INSERT INTO board_purchases(id,title) VALUES('admin-p','Linen')");
+        assert.equal((await db.query("SELECT actor_email FROM board_activity WHERE entity='purchases'")).rows[0].actor_email,'vivekalthi@gmail.com');
+      });
     });
     await t.test('unknown and unverified accounts cannot read workspace data', async () => {
       for (const kind of ['unknown','unverified']) await asUser(kind,async () => {
@@ -92,12 +147,16 @@ test('staff access migration on isolated PostgreSQL', async t => {
         assert.equal((await db.query("UPDATE workspace_access SET role='admin' RETURNING *")).rows.length,0);
       });
       await asUser('viewer',async () => assert.rejects(db.exec("INSERT INTO board_members(id,name,role) VALUES('bad','Bad','Dev')"),/row-level security/));
-      await asUser('viewer',async () => assert.rejects(db.exec("INSERT INTO workspace_access VALUES('bad@example.com','Bad','admin',now(),now())"),/row-level security|Administrator/));
+        await asUser('viewer',async () => assert.rejects(db.exec("INSERT INTO workspace_access(email,username,display_name,role) VALUES('bad@example.com','bad','Bad','admin')"),/row-level security|Administrator/));
     });
     await t.test('admin can add, edit, and remove approved users', async () => asUser('admin',async () => {
       await db.exec("INSERT INTO workspace_access(email,display_name,role) VALUES('new@example.com','New staff','viewer')");
+      assert.equal((await db.query("SELECT username FROM workspace_access WHERE email='new@example.com'")).rows[0].username,'new');
       await db.exec("UPDATE workspace_access SET role='admin' WHERE email='new@example.com'");
       assert.equal((await db.query("SELECT role FROM workspace_access WHERE email='new@example.com'")).rows[0].role,'admin');
+      await db.exec('SAVEPOINT duplicate_username');
+      await assert.rejects(db.exec("INSERT INTO workspace_access(email,username,display_name,role) VALUES('new2@example.com','new','New staff 2','viewer')"),/duplicate key|unique/i);
+      await db.exec('ROLLBACK TO SAVEPOINT duplicate_username');
       await db.exec("DELETE FROM workspace_access WHERE email='new@example.com'");
       assert.equal((await db.query("SELECT * FROM workspace_access WHERE email='new@example.com'")).rows.length,0);
     }));

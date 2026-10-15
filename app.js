@@ -3,7 +3,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&a
 const statuses = ['New', 'In progress', 'For Review', 'Completed'];
 const roles = ['Dev', 'ProB', 'Admin'];
 const priorities = ['Normal', 'High'];
-const emptyState = () => ({ members: [], tasks: [], trackers: [], activity: [] });
+const emptyState = () => ({ members: [], tasks: [], trackers: [], recurring: [], completions: [], purchases: [], activity: [] });
 const storage = {
   get(type, key) { try { return window[type].getItem(key); } catch { return null; } },
   set(type, key, value) { try { window[type].setItem(key, value); return true; } catch { return false; } },
@@ -27,7 +27,7 @@ function loadCache() {
     if (!value || !Array.isArray(value.members) || !Array.isArray(value.tasks)) throw new Error('Invalid cache');
     if (!value.members.every(item => item && typeof item.id === 'string' && typeof item.name === 'string') ||
         !value.tasks.every(item => item && typeof item.id === 'string' && typeof item.title === 'string' && statuses.includes(item.status))) throw new Error('Invalid cache');
-    return { members: value.members, tasks: value.tasks, trackers: Array.isArray(value.trackers) ? value.trackers.filter(row => row && ['id','name','url'].every(key => typeof row[key] === 'string')) : [], activity: Array.isArray(value.activity) ? value.activity : [] };
+    return { recurring: Array.isArray(value.recurring) ? value.recurring : [], completions: Array.isArray(value.completions) ? value.completions : [], purchases: Array.isArray(value.purchases) ? value.purchases : [], members: value.members, tasks: value.tasks, trackers: Array.isArray(value.trackers) ? value.trackers.filter(row => row && ['id','name','url'].every(key => typeof row[key] === 'string')) : [], activity: Array.isArray(value.activity) ? value.activity : [] };
   } catch {
     cacheWarning = 'Saved browser data could not be read. The original data has been preserved.';
     return emptyState();
@@ -35,8 +35,10 @@ function loadCache() {
 }
 let state = demoMode ? loadCache() : emptyState();
 let baseline = structuredClone(state), busy = false, ready = demoMode, stale = false;
-let view = ['dashboard', 'board', 'members', 'users', 'trackers'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard';
+let view = ['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard';
 let selected = 'all', scope = 'active', query = '', month = new Date(today() + 'T12:00:00');
+const boardFilters = new Map();
+let lastBoardView = view === 'maintenance' ? 'maintenance' : 'board';
 let taskView = storage.get('localStorage', 'forma-task-view') === 'list' ? 'list' : 'kanban';
 let toastTimer, dialogReturnFocus;
 const member = id => state.members.find(person => person.id === id);
@@ -123,16 +125,18 @@ async function refresh(force = false) {
     }
     connection('Unable to refresh · Check connection', 'error');
     if (force || !ready) toast(error.message, true);
-  } finally { busy = false; }
+  } finally { busy = false; updateRecurringClock(); }
 }
 
 function navigate(next) {
-  if (!['dashboard', 'board', 'members', 'users', 'trackers'].includes(next) || busy) return;
+  if (!['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(next) || busy) return;
+  restoreBoardFilters(next);
   view = next === 'users' && !canManageUsers() ? 'dashboard' : next;
   if (location.hash !== '#' + next) history.pushState(null, '', '#' + next);
   render(); $('#content').focus({ preventScroll: true });
 }
 function render() {
+  restoreBoardFilters(view);
   if (!visitorName) { if (FormaStore.enabled) loginScreen(); else setupScreen(); return; }
   if (view === 'users' && !canManageUsers()) view = 'dashboard';
   $('[data-view="users"]').hidden = !canManageUsers();
@@ -149,22 +153,33 @@ function render() {
     button.classList.toggle('active', button.dataset.view === view);
     if (button.dataset.view === view) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
   });
-  const titles = { trackers: ['Trackers', 'Your everyday essentials.', 'Shared sheets, documents, and links. All within reach.'], users: ['Users', 'Workspace access.', 'Manage the people who can sign in to your workspace.'], dashboard: ['Dashboard', 'Your day, in focus.', 'A clear view of your team’s progress and what’s coming next.'], board: ['Task boards', 'A little progress, every day.', 'Every task, every update, all in one place.'], members: ['Team members', 'The people behind the work.', 'Keep your team connected and their responsibilities clear.'] };
+  const titles = { trackers: ['Trackers', 'Your everyday essentials.', 'Shared sheets, documents, and links. All within reach.'], users: ['Users', 'Workspace access.', 'Manage the people who can sign in to your workspace.'], dashboard: ['Dashboard', 'Your day, in focus.', 'A clear view of your team’s progress and what’s coming next.'], board: ['Operations', 'Keep the day moving.', 'Every task, every update, all in one place.'], maintenance: ['Onsite Maintenance', 'A place for every fix.', 'Repairs, inspections, and onsite work, from request to completion.'], recurring: ['Recurring tasks', 'A rhythm for every day.', 'Daily routines and weekly responsibilities, in time order.'], purchases: ['Purchase List', 'Everything the team needs.', 'Plan your purchases and keep a record of what’s been bought.'], members: ['Team members', 'The people behind the work.', 'Keep your team connected and their responsibilities clear.'] };
   $('#breadcrumb').textContent = titles[view][0];
   connection(stale ? 'Refresh required before editing' : undefined, stale ? 'error' : undefined);
   if (!ready) { $('#content').innerHTML = '<div class="connection-panel" role="status"><p class="eyebrow">AZZURRO WORKSPACE</p><h1>Connecting your team…</h1><p>Loading tasks, members, and recent updates.</p></div>'; return; }
-  $('#content').innerHTML = `${demoMode ? '<div class="preview-banner"><b>Design preview</b><span>Sample data only · Staff sign-in is required in the shared workspace.</span></div>' : ''}${stale ? '<div class="overdue-banner" role="alert"><span>Reconnect to see the latest changes and continue editing.</span><button class="secondary" id="reconnect">Reconnect</button></div>' : ''}<div class="heading"><div><p class="eyebrow">${titles[view][0]}</p><h1>${titles[view][1]}</h1><p class="subtitle">${titles[view][2]}</p></div>${isAdmin() ? `<button class="primary" id="${view === 'trackers' ? 'add-tracker' : view === 'users' ? 'add-user' : view === 'members' ? 'add-member' : 'add-task'}">＋ ${view === 'trackers' ? 'Add tracker' : view === 'users' ? 'Add user' : view === 'members' ? 'Add member' : 'New task'}</button>` : '<span class="access-role viewer">Read-only access</span>'}</div><div id="body"></div>`;
+  $('#content').innerHTML = `${demoMode ? '<div class="preview-banner"><b>Design preview</b><span>Sample data only · Changes here stay in this browser.</span></div>' : ''}${stale ? '<div class="overdue-banner" role="alert"><span>Reconnect to see the latest changes and continue editing.</span><button class="secondary" id="reconnect">Reconnect</button></div>' : ''}<div class="heading ${view === 'users' ? 'users-heading' : ''}"><div><p class="eyebrow">${titles[view][0]}</p><h1>${titles[view][1]}</h1><p class="subtitle">${titles[view][2]}</p></div>${isAdmin() ? view === 'users' ? '<div class="user-add-actions" role="group" aria-label="Choose account role"><button class="primary" id="add-admin-user">＋ Add admin</button><button class="secondary" id="add-viewer-user">＋ Add viewer</button></div>' : `<button class="primary" id="${view === 'recurring' ? 'add-recurring' : view === 'purchases' ? 'add-purchase' : view === 'trackers' ? 'add-tracker' : view === 'members' ? 'add-member' : 'add-task'}">＋ ${view === 'recurring' ? 'Add recurring task' : view === 'purchases' ? 'Add item' : view === 'trackers' ? 'Add tracker' : view === 'members' ? 'Add member' : 'New task'}</button>` : '<span class="access-role viewer">Read-only access</span>'}</div><div id="body"></div>`;
   $('#reconnect')?.addEventListener('click', () => refresh(true));
-  if (view === 'dashboard') dashboard(); else if (view === 'board') board(); else if (view === 'users') users(); else if (view === 'trackers') trackers(); else members();
+  if (view === 'dashboard') dashboard(); else if (['board', 'maintenance'].includes(view)) board(); else if (view === 'recurring') recurring(); else if (view === 'purchases') purchases(); else if (view === 'users') users(); else if (view === 'trackers') trackers(); else members();
+  $('#add-recurring')?.addEventListener('click', () => recurringEditor());
+  $('#add-purchase')?.addEventListener('click', () => purchaseEditor());
   $('#add-tracker')?.addEventListener('click', () => trackerEditor());
-  $('#add-user')?.addEventListener('click', () => userEditor());
+  $('#add-admin-user')?.addEventListener('click', () => userEditor(null, 'admin'));
+  $('#add-viewer-user')?.addEventListener('click', () => userEditor(null, 'viewer'));
   $('#add-task')?.addEventListener('click', () => taskEditor());
   $('#add-member')?.addEventListener('click', () => memberEditor());
   if ($('.tabs')) $('.tabs').scrollLeft = tabScroll;
+  updateRecurringClock();
+}
+
+function restoreBoardFilters(next) {
+  if (!['board', 'maintenance'].includes(next) || next === lastBoardView) return;
+  boardFilters.set(lastBoardView, { selected, scope, query });
+  ({ selected, scope, query } = boardFilters.get(next) || { selected: 'all', scope: 'active', query: '' });
+  lastBoardView = next;
 }
 
 function taskRow(task) {
-  return `<button class="task-row" data-task="${esc(task.id)}"><span class="dot" aria-hidden="true"></span><span class="details"><b>${esc(task.title)}</b><small class="${overdue(task) ? 'overdue' : ''}">${esc(member(task.memberId)?.name || 'Unassigned')} · ${task.due === today() ? 'Today' : task.due === offset(1) ? 'Tomorrow' : esc(dateLabel(task.due))}${overdue(task) ? ' · Overdue' : ''}</small></span>${badge(task.status)}</button>`;
+  return `<button class="task-row" data-task="${esc(task.id)}"><span class="dot" aria-hidden="true"></span><span class="details"><b>${esc(task.title)}</b><small class="${overdue(task) ? 'overdue' : ''}">${task.area === 'maintenance' ? 'Maintenance · ' : ''}${esc(member(task.memberId)?.name || 'Unassigned')} · ${task.due === today() ? 'Today' : task.due === offset(1) ? 'Tomorrow' : esc(dateLabel(task.due))}${overdue(task) ? ' · Overdue' : ''}</small></span>${badge(task.status)}</button>`;
 }
 function bindTaskButtons(root = $('#body')) { root.querySelectorAll('[data-task]').forEach(button => { button.onclick = () => taskEditor(button.dataset.task); }); }
 function dashboard() {
@@ -172,9 +187,9 @@ function dashboard() {
   const due = active.filter(task => task.due >= today() && task.due <= offset(2)).sort(sortTasks);
   const late = active.filter(overdue);
   const stats = [['Active tasks', active.length, 'Across the workspace', icon('board')], ['Due in 3 days', due.length, 'Today and the next two days', icon('clock')], ['For review', active.filter(task => task.status === 'For Review').length, 'Ready for a second look', icon('check')], ['Team members', state.members.length, 'Working better, together', icon('people')]];
-  $('#body').innerHTML = `<div class="stats">${stats.map(stat => `<div class="stat"><em aria-hidden="true">${stat[3]}</em><p class="stat-label">${stat[0]}</p><strong>${stat[1]}</strong><small>${stat[2]}</small></div>`).join('')}</div>${late.length ? `<div class="overdue-banner"><span><b>${late.length} overdue ${late.length === 1 ? 'task needs' : 'tasks need'} attention.</b> Keep the next step moving.</span><button class="secondary" id="view-overdue">View overdue →</button></div>` : ''}<div class="dashboard-grid"><div class="panel"><div class="panel-head"><div><h2>Coming up next</h2><p>Your team’s upcoming deadlines</p></div><span class="pill">Next 3 days</span></div>${due.slice(0, 7).map(taskRow).join('') || '<div class="empty"><span class="empty-icon" aria-hidden="true">✓</span>No deadlines in the next three days.<br>A little breathing room for your team.</div>'}<div class="panel-foot"><small>${due.length > 7 ? `${due.length - 7} more upcoming tasks on the board` : 'All dates follow Sydney time'}</small><button class="text-button" id="view-board">View board →</button></div></div><div class="panel"><div class="panel-head"><div><h2>Task calendar</h2><p>Every deadline, at a glance</p></div><span class="pill">Month view</span></div><div id="calendar"></div></div></div>`;
+  $('#body').innerHTML = `<div class="stats">${stats.map(stat => `<div class="stat"><em aria-hidden="true">${stat[3]}</em><p class="stat-label">${stat[0]}</p><strong>${stat[1]}</strong><small>${stat[2]}</small></div>`).join('')}</div>${late.length ? `<div class="overdue-banner"><span><b>${late.length} overdue ${late.length === 1 ? 'task needs' : 'tasks need'} attention.</b> See overdue work in Operations and Onsite Maintenance.</span><button class="secondary" id="view-overdue">View overdue →</button></div>` : ''}<div class="dashboard-grid"><div class="panel"><div class="panel-head"><div><h2>Coming up next</h2><p>Your team’s upcoming deadlines</p></div><span class="pill">Next 3 days</span></div>${due.slice(0, 7).map(taskRow).join('') || '<div class="empty"><span class="empty-icon" aria-hidden="true">✓</span>No deadlines in the next three days.<br>A little breathing room for your team.</div>'}<div class="panel-foot"><small>${due.length > 7 ? `${due.length - 7} more upcoming tasks on the board` : 'All dates follow Sydney time'}</small><button class="text-button" id="view-board">View board →</button></div></div><div class="panel"><div class="panel-head"><div><h2>Task calendar</h2><p>Every deadline, at a glance</p></div><span class="pill">Month view</span></div><div id="calendar"></div></div></div>`;
   $('#view-board').onclick = () => navigate('board');
-  $('#view-overdue')?.addEventListener('click', () => { scope = 'overdue'; selected = 'all'; query = ''; navigate('board'); });
+  $('#view-overdue')?.addEventListener('click', () => { openDialog(`<h2 id="dialog-title">Overdue tasks</h2><div class="day-tasks">${late.sort(sortTasks).map(taskRow).join('')}</div><div class="actions"><button class="secondary" id="cancel">Close</button></div>`); bindTaskButtons($('#editor')); });
   bindTaskButtons(); calendar();
 }
 function calendar() {
@@ -197,7 +212,7 @@ function calendar() {
 
 function filteredTasks() {
   const needle = query.trim().toLowerCase();
-  return state.tasks.filter(task => (selected === 'all' || (selected === 'unassigned' ? !task.memberId : task.memberId === selected)) &&
+  return state.tasks.filter(task => (task.area || 'operations') === (view === 'maintenance' ? 'maintenance' : 'operations') && (selected === 'all' || (selected === 'unassigned' ? !task.memberId : task.memberId === selected)) &&
     (scope === 'all' || scope === 'active' && task.status !== 'Completed' || scope === 'completed' && task.status === 'Completed' || scope === 'overdue' && overdue(task)) &&
     [task.title, task.description, task.latest_note, member(task.memberId)?.name].some(value => String(value || '').toLowerCase().includes(needle)));
 }
@@ -268,10 +283,11 @@ function taskList(tasks) {
 }
 
 function members() {
-  $('#body').innerHTML = state.members.length ? `<div class="members">${state.members.map(person => `<div class="panel member"><div class="member-top"><span class="avatar">${esc(initials(person.name))}</span><span class="pill ${roles.includes(person.role) ? person.role : ''}">${esc(person.role)}</span></div><h3>${esc(person.name)}</h3><p>${state.tasks.filter(task => task.memberId === person.id && task.status !== 'Completed').length} active tasks</p><div class="member-actions"><button class="secondary" data-member-board="${esc(person.id)}">View tasks</button>${isAdmin() ? `<button class="secondary" data-edit-member="${esc(person.id)}">Edit</button><button class="danger" data-remove="${esc(person.id)}" aria-label="Remove ${esc(person.name)}">Remove</button>` : ''}</div></div>`).join('')}</div><p class="note">Member roles describe responsibilities.${sharedNameMode ? '' : ' Sign-in access is managed separately in Users.'}</p>` : '<div class="empty-state"><span class="empty-icon" aria-hidden="true">♧</span><h2>Bring your team together.</h2><p>Add your first team member to assign tasks and keep responsibilities clear.</p><button class="primary" id="first-member">＋ Add first member</button></div>';
+  $('#body').innerHTML = state.members.length ? `<div class="members">${state.members.map(person => `<div class="panel member"><div class="member-top"><span class="avatar">${esc(initials(person.name))}</span><span class="pill ${roles.includes(person.role) ? person.role : ''}">${esc(person.role)}</span></div><h3>${esc(person.name)}</h3><p>${state.tasks.filter(task => task.memberId === person.id && task.status !== 'Completed').length} active tasks</p><div class="member-actions"><button class="secondary" data-member-board="${esc(person.id)}">View tasks</button>${state.tasks.some(task => task.memberId === person.id && task.area === 'maintenance') ? `<button class="secondary" data-member-maintenance="${esc(person.id)}">Maintenance</button>` : ''}${isAdmin() ? `<button class="secondary" data-edit-member="${esc(person.id)}">Edit</button><button class="danger" data-remove="${esc(person.id)}" aria-label="Remove ${esc(person.name)}">Remove</button>` : ''}</div></div>`).join('')}</div><p class="note">Member roles describe responsibilities.${sharedNameMode ? '' : ' Sign-in access is managed separately in Users.'}</p>` : '<div class="empty-state"><span class="empty-icon" aria-hidden="true">♧</span><h2>Bring your team together.</h2><p>Add your first team member to assign tasks and keep responsibilities clear.</p><button class="primary" id="first-member">＋ Add first member</button></div>';
   if (!isAdmin() && $('#first-member')) { $('.empty-state p').textContent = 'An administrator can add members and assign their work here.'; $('#first-member').remove(); }
   $('#first-member')?.addEventListener('click', () => memberEditor());
-  document.querySelectorAll('[data-member-board]').forEach(button => { button.onclick = () => { selected = button.dataset.memberBoard; scope = 'all'; query = ''; navigate('board'); }; });
+  document.querySelectorAll('[data-member-board]').forEach(button => { button.onclick = () => { navigate('board'); selected = button.dataset.memberBoard; scope = 'all'; query = ''; render(); }; });
+  document.querySelectorAll('[data-member-maintenance]').forEach(button => { button.onclick = () => { navigate('maintenance'); selected = button.dataset.memberMaintenance; scope = 'all'; render(); }; });
   document.querySelectorAll('[data-edit-member]').forEach(button => { button.onclick = () => memberEditor(button.dataset.editMember); });
   document.querySelectorAll('[data-remove]').forEach(button => { button.onclick = async () => {
     if (!canEdit()) return;
@@ -311,7 +327,7 @@ function taskEditor(id) {
   const original = current ? structuredClone(current) : null;
   // Keep creation IDs stable if a request commits but its response is lost.
   const draftId = current?.id || crypto.randomUUID();
-  openDialog(`<form id="task-form"><h2 id="dialog-title">${current ? 'Edit task' : 'Create a task'}</h2><p class="subtitle">Clear details make the next step easier.</p><label for="title">Task title</label><input id="title" name="title" required maxlength="120" value="${esc(current?.title || '')}" placeholder="What needs to be done?"><label for="description">Description</label><textarea id="description" name="description" maxlength="10000" placeholder="Add context, details, or links…">${esc(current?.description || '')}</textarea><div class="form-row"><div><label for="assignee">Assigned to</label><select id="assignee" name="memberId"><option value="">Unassigned</option>${state.members.map(person => `<option value="${esc(person.id)}" ${(current ? current.memberId : !['all', 'unassigned'].includes(selected) ? selected : '') === person.id ? 'selected' : ''}>${esc(person.name)}</option>`).join('')}</select></div><div><label for="due">Due date · Sydney</label><input id="due" type="date" name="due" required value="${esc(current?.due || today())}"></div></div><div class="form-row"><div><label for="status">Status</label><select id="status" name="status">${statuses.map(status => `<option ${current?.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></div><div><label for="priority">Priority</label><select id="priority" name="priority">${priorities.map(priority => `<option ${current?.priority === priority ? 'selected' : ''}>${priority}</option>`).join('')}</select></div></div><div id="note-preview">${current ? notePreview(current) : ''}</div><label for="latest-note">Add an update</label><textarea id="latest-note" name="note" maxlength="3000" placeholder="What’s the latest on this task?"></textarea><small>Leave blank to keep the current note.</small>${current ? '<button type="button" class="secondary save-note-button" id="save-task-note">Save note only</button><div id="task-history"></div>' : ''}<div class="actions">${current ? '<button type="button" class="danger" id="delete-task">Delete task</button>' : ''}<button type="button" class="secondary" id="cancel">Cancel</button><button class="primary" type="submit">Save task</button></div></form>`);
+  openDialog(`<form id="task-form"><h2 id="dialog-title">${current ? 'Edit task' : 'Create a task'}</h2><p class="subtitle">${(current?.area || (view === 'maintenance' ? 'maintenance' : 'operations')) === 'maintenance' ? 'Onsite Maintenance' : 'Operations'} · Clear details make the next step easier.</p><label for="title">Task title</label><input id="title" name="title" required maxlength="120" value="${esc(current?.title || '')}" placeholder="What needs to be done?"><label for="description">Description</label><textarea id="description" name="description" maxlength="10000" placeholder="Add context, details, or links…">${esc(current?.description || '')}</textarea><div class="form-row"><div><label for="assignee">Assigned to</label><select id="assignee" name="memberId"><option value="">Unassigned</option>${state.members.map(person => `<option value="${esc(person.id)}" ${(current ? current.memberId : !['all', 'unassigned'].includes(selected) ? selected : '') === person.id ? 'selected' : ''}>${esc(person.name)}</option>`).join('')}</select></div><div><label for="due">Due date · Sydney</label><input id="due" type="date" name="due" required value="${esc(current?.due || today())}"></div></div><div class="form-row"><div><label for="status">Status</label><select id="status" name="status">${statuses.map(status => `<option ${current?.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></div><div><label for="priority">Priority</label><select id="priority" name="priority">${priorities.map(priority => `<option ${current?.priority === priority ? 'selected' : ''}>${priority}</option>`).join('')}</select></div></div><div id="note-preview">${current ? notePreview(current) : ''}</div><label for="latest-note">Add an update</label><textarea id="latest-note" name="note" maxlength="3000" placeholder="What’s the latest on this task?"></textarea><small>Leave blank to keep the current note.</small>${current ? '<button type="button" class="secondary save-note-button" id="save-task-note">Save note only</button><div id="task-history"></div>' : ''}<div class="actions">${current ? '<button type="button" class="danger" id="delete-task">Delete task</button>' : ''}<button type="button" class="secondary" id="cancel">Cancel</button><button class="primary" type="submit">Save task</button></div></form>`);
   if (current) {
     $('#task-history').innerHTML = activityHTML(id);
     $('#save-task-note').onclick = async () => {
@@ -336,7 +352,7 @@ function taskEditor(id) {
     const note = data.note.trim(); delete data.note;
     const existingTask = state.tasks.find(task => task.id === draftId);
     if (current && !existingTask) { toast('This task no longer exists.', true); return; }
-    const task = existingTask || { id: draftId, latest_note: '', note_updated_at: null };
+    const task = existingTask || { id: draftId, area: view === 'maintenance' ? 'maintenance' : 'operations', latest_note: '', note_updated_at: null };
     // A separate note save reloads current data. Preserve fields the editor has not changed.
     for (const [key, value] of Object.entries(data)) if (!original || value !== (original[key] ?? '')) task[key] = value;
     if (note) { task.latest_note = note; task.note_updated_at = new Date().toISOString(); }
@@ -387,7 +403,7 @@ function memberEditor(id) {
 
 function recordLocalChanges(before, after) {
   const entries = [];
-  for (const collection of ['tasks', 'members', 'trackers']) {
+  for (const collection of ['tasks', 'members', 'trackers', 'recurring', 'completions', 'purchases']) {
     for (const item of after[collection]) {
       const old = before[collection].find(row => row.id === item.id), changes = {};
       for (const key of Object.keys(item)) if (key !== 'id' && key !== 'note_updated_at' && (!old || item[key] !== old[key] || key === 'latest_note' && item.note_updated_at !== old.note_updated_at)) changes[key] = { from: old?.[key] ?? null, to: item[key] };
@@ -424,14 +440,18 @@ function exportTasks() {
 }
 
 document.querySelectorAll('nav button').forEach(button => { button.onclick = () => navigate(button.dataset.view); });
-window.addEventListener('hashchange', () => { const next = location.hash.slice(1); if (['dashboard', 'board', 'members', 'users', 'trackers'].includes(next)) { view = next; render(); } });
+window.addEventListener('hashchange', () => { const next = location.hash.slice(1); if (['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(next)) { view = next; render(); } });
 $('#editor').addEventListener('cancel', event => { if (busy) event.preventDefault(); });
 $('#editor').addEventListener('close', () => { if (dialogReturnFocus?.isConnected) dialogReturnFocus.focus({ preventScroll: true }); else $('#content').focus({ preventScroll: true }); });
 document.addEventListener('keydown', event => {
   if ((event.ctrlKey || event.metaKey || event.altKey) || $('#editor').open || !visitorName || event.target.matches('input,textarea,select,[contenteditable]')) return;
-  if (event.key === '/' && view === 'board') { event.preventDefault(); $('#search').focus(); }
-  if (event.key.toLowerCase() === 'n') { event.preventDefault(); taskEditor(); }
+  if (event.key === '/' && ['board', 'maintenance'].includes(view)) { event.preventDefault(); $('#search').focus(); }
+  if (event.key.toLowerCase() === 'n') { event.preventDefault(); if (view === 'recurring') recurringEditor(); else if (view === 'purchases') purchaseEditor(); else taskEditor(); }
 });
 initSidebar();
 initializeAccess();
 if (FormaStore.enabled) { if (!sharedNameMode) WorkspaceAuth.onSignOut(() => clearAccess()); setInterval(() => refresh(), 30000); window.addEventListener('focus', () => refresh()); }
+
+// Update reminder colors without replacing focused controls or open drafts.
+setInterval(updateRecurringClock, 15000);
+window.addEventListener('focus', updateRecurringClock);

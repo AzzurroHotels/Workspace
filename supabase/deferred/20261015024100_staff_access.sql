@@ -7,13 +7,14 @@ GRANT USAGE ON SCHEMA private TO authenticated;
 
 CREATE TABLE public.workspace_access (
   email text PRIMARY KEY CHECK (email = lower(btrim(email)) AND char_length(email) BETWEEN 3 AND 254 AND email ~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'),
+  username text NOT NULL UNIQUE CHECK (username = lower(btrim(username)) AND char_length(username) BETWEEN 3 AND 32 AND username ~ '^[a-z0-9][a-z0-9._-]*$'),
   display_name text NOT NULL CHECK (char_length(btrim(display_name)) BETWEEN 1 AND 70),
   role text NOT NULL CHECK (role IN ('admin', 'viewer')),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-INSERT INTO public.workspace_access (email, display_name, role)
-VALUES ('vivekalthi@gmail.com', 'Vivek', 'admin');
+INSERT INTO public.workspace_access (email, username, display_name, role)
+VALUES ('vivekalthi@gmail.com', 'vivek', 'Vivek', 'admin');
 
 -- Serializes access changes, including under repeatable-read isolation. A row
 -- update forces conflicting transactions to wait or receive serialization errors.
@@ -62,6 +63,12 @@ BEGIN
     END IF;
   END IF;
   IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  IF TG_OP = 'INSERT' AND coalesce(btrim(NEW.username), '') = '' THEN
+    NEW.username = lower(regexp_replace(split_part(NEW.email, '@', 1), '[^a-zA-Z0-9._-]+', '-', 'g'));
+    NEW.username = left(btrim(NEW.username, '._-'), 32);
+    IF char_length(NEW.username) < 3 THEN NEW.username = 'staff-' || substr(md5(NEW.email), 1, 8); END IF;
+  END IF;
+  NEW.username = lower(btrim(NEW.username));
   NEW.display_name = btrim(NEW.display_name);
   NEW.updated_at = clock_timestamp();
   RETURN NEW;
@@ -78,7 +85,7 @@ REVOKE ALL ON public.board_members, public.board_tasks, public.board_activity, p
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.board_members, public.board_tasks TO authenticated;
 GRANT SELECT ON public.board_activity TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.workspace_access TO authenticated;
-GRANT UPDATE (display_name, role) ON public.workspace_access TO authenticated;
+GRANT UPDATE (username, display_name, role) ON public.workspace_access TO authenticated;
 
 CREATE POLICY staff_members_read ON public.board_members FOR SELECT TO authenticated
 USING ((SELECT private.workspace_role()) IN ('admin', 'viewer'));
@@ -145,8 +152,8 @@ BEGIN
   END LOOP;
   IF TG_OP = 'UPDATE' AND diff = '{}'::jsonb THEN RETURN NEW; END IF;
   INSERT INTO public.board_activity(entity,record_id,record_title,action,actor_name,actor_user_id,actor_email,changes)
-  VALUES (CASE TG_TABLE_NAME WHEN 'board_tasks' THEN 'tasks' WHEN 'board_members' THEN 'members' WHEN 'board_trackers' THEN 'trackers' ELSE 'users' END,
-    coalesce(item ->> 'id', item ->> 'email'), coalesce(item ->> 'title', item ->> 'name', item ->> 'display_name'),
+  VALUES (CASE TG_TABLE_NAME WHEN 'board_tasks' THEN 'tasks' WHEN 'board_members' THEN 'members' WHEN 'board_trackers' THEN 'trackers' WHEN 'board_recurring' THEN 'recurring' WHEN 'board_completions' THEN 'completions' WHEN 'board_purchases' THEN 'purchases' ELSE 'users' END,
+    coalesce(item ->> 'id', item ->> 'email'), coalesce(item ->> 'title', item ->> 'name', item ->> 'display_name', item ->> 'recurring_id'),
     TG_OP, coalesce(actor_label, 'Database maintenance'), actor_id, actor_email_value, diff);
   IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
   RETURN NEW;
@@ -154,4 +161,15 @@ END $$;
 REVOKE ALL ON FUNCTION public.record_board_activity() FROM PUBLIC, anon, authenticated;
 CREATE TRIGGER record_workspace_access AFTER INSERT OR UPDATE OR DELETE ON public.workspace_access
 FOR EACH ROW EXECUTE FUNCTION public.record_board_activity();
+-- Include every shared workflow when staff authentication is activated later.
+DO $$ DECLARE tbl text; BEGIN
+  FOREACH tbl IN ARRAY ARRAY['board_recurring','board_completions','board_purchases'] LOOP
+    EXECUTE format('DROP POLICY shared_workflow_access ON public.%I',tbl);
+    EXECUTE format('REVOKE ALL ON public.%I FROM PUBLIC, anon, authenticated',tbl);
+    EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO authenticated',tbl);
+    EXECUTE format('CREATE POLICY staff_workflow_read ON public.%I FOR SELECT TO authenticated USING ((SELECT private.workspace_role()) IN (''admin'',''viewer''))',tbl);
+    EXECUTE format('CREATE POLICY admin_workflow_write ON public.%I FOR ALL TO authenticated USING ((SELECT private.workspace_role())=''admin'') WITH CHECK ((SELECT private.workspace_role())=''admin'')',tbl);
+  END LOOP;
+END $$;
+REVOKE UPDATE ON public.board_completions FROM authenticated;
 COMMIT;

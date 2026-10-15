@@ -16,8 +16,8 @@ function pass(name) { results.push({name,status:'passed'}); console.log('PASS',n
   async function setup({signedIn=true,role='admin'}={}) {
     const context = await browser.newContext({viewport:{width:1440,height:1000}});
     const data = fixture();
-    const db = {board_members:data.members,board_tasks:data.tasks.map(({memberId,...task})=>({...task,member_id:memberId||null})),board_activity:[],board_trackers:data.trackers,workspace_access:[{...auth.profile,role},{email:'viewer@example.com',display_name:'Jamie Wilson',role:'viewer'}]};
-    const requests=[]; let otpFailure=false;
+    const db = {board_members:data.members,board_tasks:data.tasks.map(({memberId,...task})=>({...task,member_id:memberId||null})),board_activity:[],board_recurring:[],board_completions:[],board_purchases:[],board_trackers:data.trackers,workspace_access:[{...auth.profile,role},{email:'viewer@example.com',username:'jamie',display_name:'Jamie Wilson',role:'viewer'}]};
+    const requests=[]; let passwordFailure=false;
     await context.addInitScript(({signedIn,session})=>{
       if (!sessionStorage.getItem('test-initialized')) {
         if(signedIn) localStorage.setItem('azzurro-staff-auth',JSON.stringify(session));
@@ -25,22 +25,36 @@ function pass(name) { results.push({name,status:'passed'}); console.log('PASS',n
         sessionStorage.setItem('test-initialized','yes');
       }
     },{signedIn,session:auth.session});
-    await context.route('**/config.js*',route=>route.fulfill({contentType:'text/javascript',body:'window.FORMA_CONFIG={supabaseUrl:"https://workspace.test",supabasePublishableKey:"test"};'}));
+    await context.route('**/config.js*',route=>route.fulfill({contentType:'text/javascript',body:'window.FORMA_CONFIG={supabaseUrl:"https://workspace.test",supabasePublishableKey:"test",userCreationEnabled:true};'}));
     await context.route('**/*.supabase.co/**',route=>route.abort());
     await context.route('https://workspace.test/**',async route=>{
       const request=route.request(),url=new URL(request.url());
       const body=request.postData() ? request.postDataJSON() : null;
-      requests.push({method:request.method(),path:url.pathname,body,headers:request.headers()});
+      requests.push({method:request.method(),path:url.pathname,grantType:url.searchParams.get('grant_type'),body,headers:request.headers()});
       if(url.pathname==='/auth/v1/user') return route.fulfill({json:auth.user});
       if(url.pathname==='/auth/v1/logout') return route.fulfill({status:204});
-      if(url.pathname==='/auth/v1/otp') return route.fulfill(otpFailure ? {status:429,json:{msg:'Please wait before requesting another sign-in link.'}} : {json:{}});
-      if(url.pathname==='/auth/v1/token') return route.fulfill({json:auth.session});
+      if(url.pathname==='/functions/v1/workspace-sign-in') return route.fulfill(passwordFailure ? {status:401,json:{error:'Name or password is incorrect.'}} : {json:{session:auth.session}});
+      if(url.pathname==='/auth/v1/token') return route.fulfill(url.searchParams.get('grant_type')==='password'&&passwordFailure ? {status:400,json:{msg:'Invalid login credentials'}} : {json:auth.session});
+      if(url.pathname==='/functions/v1/create-workspace-user') {
+        assert.equal(request.headers().authorization,'Bearer '+auth.session.access_token);
+        const username=body.display_name.toLowerCase().replace(/[^a-z0-9._-]+/g,'-').replace(/^[._-]+|[._-]+$/g,'').slice(0,32).replace(/[._-]+$/g,'');
+        const email=username+'@workspace.invalid';
+        if(db.workspace_access.some(row=>row.email===email||row.username===username)) return route.fulfill({status:409,json:{error:'That name already has access.'}});
+        const row={email,username,display_name:body.display_name,role:body.role}; db.workspace_access.push(row);
+        return route.fulfill({status:201,json:{user:row}});
+      }
+      if(url.pathname==='/functions/v1/update-workspace-user') {
+        assert.equal(request.headers().authorization,'Bearer '+auth.session.access_token);
+        const row=db.workspace_access.find(item=>item.email===body.email); assert.ok(row);
+        row.display_name=body.display_name; row.username=body.display_name.toLowerCase().replace(/[^a-z0-9._-]+/g,'-').replace(/^[._-]+|[._-]+$/g,'').slice(0,32).replace(/[._-]+$/g,'');
+        return route.fulfill({json:{user:{username:row.username,display_name:row.display_name,role:row.role}}});
+      }
       const table=url.pathname.split('/').pop();
       assert.ok(db[table], 'Only known API tables may be requested');
       assert.equal(request.headers().authorization,'Bearer '+auth.session.access_token);
       let rows=db[table];
       if(url.searchParams.has('email')) rows=rows.filter(row=>row.email===url.searchParams.get('email').slice(3));
-      for(const key of ['id','name','url','role','display_name']) if(url.searchParams.has(key)) rows=rows.filter(row=>String(row[key])===url.searchParams.get(key).slice(3));
+      for(const key of ['id','name','url','role','display_name','username']) if(url.searchParams.has(key)) rows=rows.filter(row=>String(row[key])===url.searchParams.get(key).slice(3));
       if(request.method()==='GET') return route.fulfill({json:rows.slice(Number(url.searchParams.get('offset')||0),Number(url.searchParams.get('offset')||0)+500)});
       if(!['workspace_access','board_trackers'].includes(table)) return route.fulfill({status:403,json:{message:'Test forbids task writes'}});
       if(request.method()==='POST') {
@@ -53,40 +67,49 @@ function pass(name) { results.push({name,status:'passed'}); console.log('PASS',n
     const page=await context.newPage(); page.on('pageerror',error=>errors.push(error.message));
     await page.goto(base);
     await page.locator(signedIn ? '.heading' : '#login-form button:not([disabled])').waitFor();
-    return {page,context,db,requests,setOtpFailure(value){otpFailure=value;}};
+    return {page,context,db,requests,setPasswordFailure(value){passwordFailure=value;}};
   }
   try {
     const admin=await setup(); const page=admin.page;
     await page.locator('[data-view="users"]').click(); await page.locator('.user-card').first().waitFor();
     assert.equal(await page.locator('.user-card').count(),2);
     await page.screenshot({path:path.join(output,'desktop-users.png'),fullPage:true});
-    await page.locator('#add-user').click(); await page.locator('#user-name').fill('New staff'); await page.locator('#user-email').fill(' NEW@example.com '.trim());
-    assert.equal(await page.locator('#user-role').inputValue(),'viewer');
+    await page.locator('#add-viewer-user').click(); await page.locator('#user-name').fill('New staff'); await page.locator('#user-password').fill('Local Test Password 42!');
+    assert.equal(await page.locator('#user-form input').count(),2);
     await page.locator('#user-form button[type="submit"]').click();
-    await page.getByText('new@example.com',{exact:true}).waitFor();
-    assert.equal(admin.db.workspace_access.find(row=>row.email==='new@example.com').role,'viewer');
-    await page.locator('[data-edit-user="new@example.com"]').click(); await page.locator('#user-role').selectOption('admin'); await page.locator('#user-form button[type="submit"]').click();
+    const newUserEmail='new-staff@workspace.invalid';
+    await page.getByRole('heading',{name:'New staff',exact:true}).waitFor();
+    assert.equal(admin.db.workspace_access.find(row=>row.email===newUserEmail).role,'viewer');
+    const provision=admin.requests.find(req=>req.path==='/functions/v1/create-workspace-user');
+    assert.deepEqual(Object.keys(provision.body).sort(),['display_name','password','role']); assert.equal(provision.body.display_name,'New staff'); assert.equal(provision.body.role,'viewer'); assert.ok(provision.body.password); assert.equal(Object.hasOwn(admin.db.workspace_access.find(row=>row.email===newUserEmail),'password'),false);
+    await page.locator('[data-edit-user="admin@example.com"]').click();
+    assert.deepEqual(await page.locator('#user-form label').allTextContents(),['Name','Password']);
+    await page.locator('#cancel').click();
+    assert.doesNotMatch(await page.locator('.user-card').filter({has:page.getByRole('heading',{name:'New staff'})}).innerText(),/workspace\.invalid|new-staff/);
+    await page.locator(`[data-edit-user="${newUserEmail}"]`).click(); await page.locator('#user-name').fill('New staff member'); await page.locator('#user-password').fill('Changed Test Password 43!'); await page.locator('#user-form button[type="submit"]').click();
+    assert.ok(admin.requests.some(req=>req.path==='/functions/v1/update-workspace-user'&&req.body.password==='Changed Test Password 43!'));
+    const renamedEmail=newUserEmail;
+    await page.locator(`[data-change-role="${renamedEmail}"]`).click();
     await page.locator('#editor[open]').waitFor({state:'detached'});
-    assert.equal(admin.db.workspace_access.find(row=>row.email==='new@example.com').role,'admin');
-    page.once('dialog',dialog=>dialog.accept()); await page.locator('[data-remove-user="new@example.com"]').click();
-    await page.getByText('new@example.com',{exact:true}).waitFor({state:'detached'});
-    assert.equal(admin.requests.some(req=>req.path==='/auth/v1/otp'),false);
-    pass('Admin adds, changes, and removes user access without sending invitation emails');
+    assert.equal(admin.db.workspace_access.find(row=>row.email===renamedEmail).role,'admin');
+    page.once('dialog',dialog=>dialog.accept()); await page.locator(`[data-remove-user="${renamedEmail}"]`).click();
+    await page.getByRole('heading',{name:'New staff member',exact:true}).waitFor({state:'detached'});
+    pass('Admin creates and updates name/password accounts; role stays separate and passwords never enter workspace data');
 
     await page.locator('[data-edit-user="admin@example.com"]').click();
-    assert.equal(await page.locator('#user-role').isDisabled(),true); assert.equal(await page.locator('#user-email').getAttribute('readonly'),'');
-    await page.locator('#cancel').click(); assert.equal(await page.locator('[data-remove-user="admin@example.com"]').count(),0);
+    assert.equal(await page.locator('#user-form input').count(),2);
+    await page.locator('#cancel').click(); assert.equal(await page.locator('[data-remove-user="admin@example.com"]').count(),0); assert.equal(await page.locator('[data-change-role="admin@example.com"]').count(),0);
     pass('Own administrator access is protected in the Users interface');
 
     for(const width of [1920,1440,1280,1024,768,390,320]) {
       await page.setViewportSize({width,height:1000});
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Users overflow at '+width);
-      await page.locator('#add-user').click();
+      await page.locator('#add-admin-user').click();
       assert.ok(await page.locator('#editor').evaluate(element=>element.scrollWidth<=element.clientWidth+1),'User dialog overflow at '+width);
       await page.locator('#cancel').click();
     }
     await page.setViewportSize({width:1440,height:1000});
-    pass('Users page and add-user dialog fit all seven viewport widths');
+    pass('Users page and two-field account dialog fit all seven viewport widths');
 
     await page.locator('[data-view="trackers"]').click();
     await page.locator('#add-tracker').click();await page.locator('#tracker-name').fill('Shared tracker');await page.locator('#tracker-url').fill('https://example.com/shared');
@@ -138,26 +161,28 @@ function pass(name) { results.push({name,status:'passed'}); console.log('PASS',n
       assert.ok(await denied.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     }
     await denied.page.setViewportSize({width:1440,height:1000});
-    await denied.page.locator('#login-email').fill('admin@example.com'); await denied.page.locator('#login-form button').click();
-    await denied.page.getByText('Check your inbox.',{exact:false}).waitFor();
-    const otp=denied.requests.find(req=>req.path==='/auth/v1/otp');
-    assert.equal(otp.body.email,'admin@example.com'); assert.equal(otp.body.code_challenge_method,'s256'); assert.ok(otp.body.code_challenge);
-    pass('Signed-out users cannot bypass sign-in with the old name cache; SDK sends a PKCE link request');
-
-    await denied.page.goto(base+'/?code=mock-email-callback'); await denied.page.locator('.heading').waitFor();
-    const exchange=denied.requests.find(req=>req.path==='/auth/v1/token');
-    assert.equal(exchange.body.auth_code,'mock-email-callback'); assert.ok(exchange.body.code_verifier);
-    assert.equal(new URL(denied.page.url()).searchParams.has('code'),false);
+    denied.setPasswordFailure(true);
+    await denied.page.locator('#login-username').fill('not-added'); await denied.page.locator('#login-password').fill('Local Test Password 42!');
+    await denied.page.locator('#login-form button[type="submit"]').click();
+    await denied.page.getByText('Name or password is incorrect.',{exact:true}).waitFor();
+    assert.equal(denied.requests.filter(req=>req.path.includes('/rest/')).length,0);
+    denied.setPasswordFailure(false);
+    await denied.page.locator('#login-username').fill('VIVEK'); await denied.page.locator('#login-password').fill('Local Test Password 42!');
+    await denied.page.locator('#login-form button[type="submit"]').click();
+    await denied.page.locator('.heading').waitFor();
+    const signInRequest=denied.requests.find(req=>req.path==='/functions/v1/workspace-sign-in'&&req.body?.username==='vivek');
+    assert.equal(signInRequest.body.username,'vivek'); assert.ok(signInRequest.body.password);
+    assert.equal(await denied.page.locator('#auth-mode-toggle').count(),0);
     await denied.page.reload(); await denied.page.locator('.heading').waitFor();
-    pass('Official SDK handles the email callback, clears its code, and restores a verified session on reload');
+    pass('Only administrator-provisioned username/password accounts can sign in; the session restores after reload');
 
     await denied.page.locator('#sign-out').click(); await denied.page.locator('#login-form').waitFor();
     assert.equal(await denied.page.evaluate(()=>localStorage.getItem('azzurro-staff-auth')),null);
     await denied.page.reload(); await denied.page.locator('#login-form button:not([disabled])').waitFor();
-    denied.setOtpFailure(true); await denied.page.locator('#login-email').fill('admin@example.com'); await denied.page.locator('#login-form button').click();
-    await denied.page.getByText('Please wait before requesting another sign-in link.',{exact:true}).waitFor();
+    denied.setPasswordFailure(true); await denied.page.locator('#login-username').fill('vivek'); await denied.page.locator('#login-password').fill('Wrong Local Password 42!'); await denied.page.locator('#login-form button').click();
+    await denied.page.getByText('Name or password is incorrect.',{exact:true}).waitFor();
     assert.equal(await denied.page.locator('#login-form button').isEnabled(),true);
-    pass('Sign-out clears the session; email delivery errors remain actionable and retryable');
+    pass('Sign-out clears the session; invalid-credential errors remain actionable and retryable');
     assert.deepEqual(errors,[]); pass('No browser JavaScript errors in access workflows');
     fs.writeFileSync(path.join(output,'access-verification.json'),JSON.stringify({results,errors},null,2));
   } finally { await browser.close(); }

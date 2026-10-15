@@ -24,6 +24,35 @@ function setup(options = {}) {
 }
 const response = (rows, status = 200) => ({ ok: status < 400, status, json: async () => rows });
 
+test('purchase transitions guard the original status and timestamp', async () => {
+  const purchase={id:'p',title:'Towels',quantity:'2 boxes',category:'Housekeeping',notes:'',priority:'Normal',status:'planned',purchased_at:null};
+  const {store,calls}=setup({data:{board_purchases:[purchase]},handle:()=>response([purchase])});
+  const before=await store.load(), after=clone(before);
+  after.purchases[0].status='purchased';after.purchases[0].purchased_at='2026-10-15T03:00:00Z';
+  await store.save(before,after);
+  const patch=calls.find(c=>c.method==='PATCH');assert.equal(patch.table,'board_purchases');
+  assert.equal(patch.query.get('status'),'eq.planned');assert.equal(patch.query.get('purchased_at'),'is.null');
+  assert.deepEqual(Object.keys(JSON.parse(patch.body)).sort(),['purchased_at','status']);
+});
+test('in-place UI edits cannot change original workflow concurrency snapshots',async()=>{
+  const purchase={id:'p',title:'Towels',quantity:'1',category:'',notes:'',priority:'Normal',status:'planned',purchased_at:null};
+  const recurring={id:'r',title:'Opening',frequency:'daily',weekday:null,time:'09:00',start_date:'2026-10-15',category:'',notes:'',paused:false};
+  const {store,calls}=setup({data:{board_purchases:[purchase],board_recurring:[recurring]},handle:()=>response([purchase])});
+  const state=await store.load(),baseline=clone(state);
+  state.purchases[0].status='purchased';state.recurring[0].time='10:00';
+  await store.save(baseline,state);
+  assert.equal(calls.find(c=>c.method==='PATCH'&&c.table==='board_purchases').query.get('status'),'eq.planned');
+  assert.equal(calls.find(c=>c.method==='PATCH'&&c.table==='board_recurring').query.get('time'),'eq.09:00');
+});
+test('removing a routine lets the server cascade completions atomically',async()=>{
+  const recurring={id:'r',title:'Opening',frequency:'daily',weekday:null,time:'09:00',start_date:'2026-10-15',category:'',notes:'',paused:false};
+  const completion={id:'c',recurring_id:'r',occurrence:'2026-10-15',completed_at:'2026-10-15T03:00:00Z'};
+  const {store,calls}=setup({data:{board_recurring:[recurring],board_completions:[completion]},handle:()=>response([recurring])});
+  const before=await store.load(),after=clone(before);after.recurring=[];after.completions=[];
+  await store.save(before,after);
+  assert.deepEqual(calls.filter(c=>c.method!=='GET').map(c=>[c.table,c.method]),[['board_recurring','DELETE']]);
+});
+
 test('loads all rows even when the server caps a page below 500', async () => {
   const { store, calls } = setup({ pageSize: 1, data: { board_members: [member, { ...member, id: 'member-2' }] } });
   const state = await store.load();

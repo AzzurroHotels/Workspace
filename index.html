@@ -7,7 +7,7 @@
   <meta name="description" content="Azzurro Workspace — tasks, people, and progress in one place.">
   <title>Azzurro Workspace</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261015.3\">
+  <link rel="stylesheet" href="style.css?v=20261015.6">
 </head>
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
@@ -18,8 +18,11 @@
     <p class="nav-label">Workspace</p>
     <nav aria-label="Main">
       <button data-view="dashboard"><span data-nav-icon="dashboard"></span> Dashboard</button>
-      <button data-view="board"><span data-nav-icon="board"></span> Task boards</button>
+      <button data-view="recurring"><span data-nav-icon="repeat"></span> Recurring tasks<span class="routine-nav-count" id="routine-nav-count" hidden></span></button>
+      <button data-view="board"><span data-nav-icon="board"></span> Operations</button>
+      <button data-view="maintenance"><span data-nav-icon="tools"></span> Onsite Maintenance</button>
       <button data-view="trackers"><span data-nav-icon="folder"></span> Trackers</button>
+      <button data-view="purchases"><span data-nav-icon="cart"></span> Purchase List</button>
       <button data-view="members"><span data-nav-icon="people"></span> Team members</button>
       <button data-view="users" hidden><span data-nav-icon="users"></span> Users</button>
     </nav>
@@ -36,13 +39,15 @@
   <dialog id="editor" aria-labelledby="dialog-title"></dialog>
   <div id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
   <noscript>This workspace needs JavaScript to display tasks and save changes.</noscript>
-  <script src="config.js?v=20261015.3\"></script>
-  <script src="vendor/supabase.js?v=20261015.3\"></script>
-  <script src="auth.js?v=20261015.3\"></script>
-  <script src="store.js?v=20261015.3\"></script>
-  <script src="ui.js?v=20261015.3\"></script>
-  <script src="trackers.js?v=20261015.3\"></script>
-  <script src="access-ui.js?v=20261015.3\"></script>
-  <script src="app.js?v=20261015.3\"></script>
+  <script src="config.js?v=20261015.6"></script>
+  <script src="vendor/supabase.js?v=20261015.6"></script>
+  <script src="auth.js?v=20261015.6"></script>
+  <script src="store.js?v=20261015.6"></script>
+  <script src="ui.js?v=20261015.6"></script>
+  <script src="trackers.js?v=20261015.6"></script>
+  <script src="access-ui.js?v=20261015.6"></script>
+  <script src="schedules.js?v=20261015.6"></script>
+  <script src="workflows.js?v=20261015.6"></script>
+  <script src="app.js?v=20261015.6"></script>
 </body>
 </html>

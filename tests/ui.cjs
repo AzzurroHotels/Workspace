@@ -94,7 +94,7 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     await page.keyboard.press('Escape');
     await page.locator('[data-view="board"]').click(); await page.keyboard.press('/'); assert.equal(await page.locator('#search').evaluate(el => el === document.activeElement), true);
     await page.locator('[data-view="members"]').click(); await page.goBack(); assert.match(page.url(), /#board$/);
-    await page.reload(); assert.match(await page.locator('#breadcrumb').innerText(), /Task boards/);
+    await page.reload(); assert.match(await page.locator('#breadcrumb').innerText(), /Operations/);
     assert.equal(await page.locator('[data-task-status="task-2"]').inputValue(), 'In progress');
     check('Calendar controls, keyboard search, Escape, browser history, persisted state');
 

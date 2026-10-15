@@ -1,0 +1,8 @@
+[functions.create-workspace-user]
+verify_jwt = true
+
+[functions.workspace-sign-in]
+verify_jwt = false
+
+[functions.update-workspace-user]
+verify_jwt = true

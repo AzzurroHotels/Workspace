@@ -3,7 +3,24 @@
 Production: https://azzurrohotels.github.io/Workspace/
 Supabase project: `iunkhgyoujdxybufjcgo`.
 
-## Current release — 15 October 2026
+## Pending workflow release - approval required
+
+Status: local implementation and isolated tests only. The user instructed: "publish only if i approve." No production migration, push, PR, merge or Pages publication has been performed for this version.
+
+Preview: http://127.0.0.1:4175/#recurring (fictional, browser-only data). Local branch: `enhance/operations-recurring-purchases`; base live commit: `73795c9`.
+
+Includes Operations rename, separate Onsite Maintenance board, daily/weekly recurring schedules with due colors and sidebar counts, and Purchase List with reversible purchased status. Local auth work adds admin-created name/password accounts and persistent browser sessions. The Users form now asks only for a name and password; admins choose Admin or Viewer outside the form, and email identity details stay internal. The deployed shared-name entry, Supabase project, task data and GitHub Pages remain unchanged. Cache version is `20261015.6`.
+
+After explicit user approval only:
+
+1. Refresh remote/main and take a fresh private backup of tasks, members, trackers and activity. Record counts and full-row fingerprints; exclude only the new area field from the post-migration comparison.
+2. Apply only `supabase/migrations/20261015040000_operations_workflows.sql`. It adds `board_tasks.area` with default operations plus three empty workflow tables. It does not seed demo data or rewrite original task fields. Align the local filename to the actual assigned migration version if the management API assigns a different timestamp.
+3. Compare original fields and history against the pre-migration snapshot, investigate any concurrent team edits, and verify grants/schema. Publish the matching frontend through the existing GitHub Pages source.
+4. Verify live tabs, existing task counts/history, and new empty workflow views without creating dummy production records. Preserve all new records if a frontend rollback is needed; do not drop tables or reset data.
+
+The pending staff-authentication scripts were moved to `supabase/deferred/` so an ordinary migration run cannot unexpectedly activate sign-in. They now cover all new workflow tables and require the operations_workflows schema first. Staff authentication remains a separate deferred change.
+
+## Published release — 15 October 2026
 
 Published to the existing GitHub Pages URL. PR #1 is merged into `main`, Pages reported a successful build, and the live browser loaded all 37 tasks, 4 members, timestamp labels and the Trackers tab. Sidebar collapse/reopen worked, with no JavaScript errors. Original full-row fingerprints still matched after live verification.
 
@@ -19,14 +36,14 @@ Validation: 33 automated adapter/database checks passed, including full-record p
 
 ## Future staff sign-in activation
 
-This is deferred, not active in the current release. First sign in to Supabase using an account allowed to change Authentication settings. The inspected account had disabled controls; Site URL was `http://localhost:3000`, no redirect allowlist existed, and custom SMTP was disabled.
+This remains deferred and production is still in shared-name mode. A read-only check confirms `public.workspace_access` does not exist in production, so staff authentication has not been activated there.
 
-1. In Authentication → URL Configuration set Site URL to `https://azzurrohotels.github.io/Workspace/` and add that exact value to Redirect URLs, preserving other legitimate entries.
-2. Configure custom SMTP in Authentication → Emails → SMTP. Enter provider credentials only in Supabase. Verify delivery before changing access. Supabase's default sender is restricted to organization team addresses and is not suitable for general staff onboarding: https://supabase.com/docs/guides/auth/auth-smtp.
-3. Apply `20261015024100_staff_access.sql`, then `20261015024101_trackers_and_signup.sql`. The latter preserves existing tracker rows and removes the temporary shared tracker policy. The exact initial administrator is `vivekalthi@gmail.com`.
-4. Enable PostgreSQL Before User Created hook `public.hook_before_user_created` in Authentication → Hooks. Keep email confirmation enabled and new accounts allowed for approved users. The hook blocks unapproved first-time accounts; RLS independently checks approved verified membership on every request.
-5. Coordinate removal of `accessMode: 'shared-name'` with those migrations and publish the matching frontend. A missing accessMode selects staff sign-in, not shared entry. A client-side flag cannot bypass the restricted database policies once they are applied.
-6. Verify a real email-link sign-in in the same browser, Admin/Viewer behavior, anonymous denial and revocation. Adding a user in Users grants email approval; it does not send an invitation. Preserve tasks, members, trackers and history throughout.
+1. After explicit approval, refresh the production branch and take a fresh, private backup before applying the operations migration described above.
+2. After `operations_workflows` is applied, apply `supabase/deferred/20261015024100_staff_access.sql`, then `supabase/deferred/20261015024101_trackers_and_signup.sql`, assigning fresh migration versions when activated. These preserve tasks and trackers while switching database access to verified staff roles. The initial admin row is `vivekalthi@gmail.com`, username `vivek`, display name `Vivek`.
+3. In Supabase Authentication, create the first Auth identity for that approved email, set a fresh password directly in the dashboard, and confirm the email. Do not send passwords through chat or put them in source files.
+4. Deploy `supabase/functions/create-workspace-user` and `supabase/functions/update-workspace-user` with JWT verification enabled, plus `supabase/functions/workspace-sign-in` with JWT verification disabled for its pre-login endpoint. All keep the service-role key server-side. The sign-in function privately maps the entered name to its account and returns a session only after Supabase verifies the password. The create function derives the internal login and email identity, while the update function changes the account name/password after an administrator check. Both write access changes with the signed-in administrator's JWT so RLS and audit history apply. No function stores or logs passwords. Keep public signup disabled.
+5. Coordinate `accessMode: 'shared-name'` → `staff-password` and `userCreationEnabled: true` with the database policies and both deployed functions. The flag stays false until the functions and initial administrator are ready. Supabase Auth persists sessions in the browser and refreshes tokens; a project security policy can still require a future sign-in.
+6. Verify name/password sign-in, Admin/Viewer behavior, anonymous denial, revocation, user creation and browser reload. Preserve current tasks, trackers, members and activity throughout. No SMTP is needed for administrator-created accounts; configure a mail sender later if password recovery email is added.
 
 ## Recovery
 

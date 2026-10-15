@@ -5,7 +5,10 @@ window.FormaStore = (() => {
   const fields = {
     members: ['id', 'name', 'role'],
     trackers: ['id', 'name', 'url'],
-    tasks: ['id', 'title', 'description', 'member_id', 'status', 'due', 'priority', 'latest_note', 'note_updated_at']
+    recurring: ['id','title','category','notes','frequency','weekday','time','start_date','paused'],
+    completions: ['id','recurring_id','occurrence','completed_at'],
+    purchases: ['id','title','quantity','category','notes','priority','status','purchased_at'],
+    tasks: ['id', 'area', 'title', 'description', 'member_id', 'status', 'due', 'priority', 'latest_note', 'note_updated_at']
   };
   let snapshots = new Map();
 
@@ -55,22 +58,29 @@ window.FormaStore = (() => {
   }
 
   async function load() {
-    const [members, tasks, activity, trackers] = await Promise.all([
+    const [members, tasks, activity, trackers, recurring, completions, purchases] = await Promise.all([
       allRows('board_members?select=*&order=created_at.asc,id.asc'),
       allRows('board_tasks?select=*&order=created_at.asc,id.asc'),
       allRows('board_activity?select=*&order=created_at.desc,id.desc'),
-      allRows('board_trackers?select=*&order=created_at.asc,id.asc')
+      allRows('board_trackers?select=*&order=created_at.asc,id.asc'),
+      allRows('board_recurring?select=*&order=created_at.asc,id.asc'),
+      allRows('board_completions?select=*&order=created_at.asc,id.asc'),
+      allRows('board_purchases?select=*&order=created_at.asc,id.asc')
     ]);
     snapshots = new Map([
+      ...recurring.map(row => [`recurring:${row.id}`, row]),
+      ...completions.map(row => [`completions:${row.id}`, row]),
+      ...purchases.map(row => [`purchases:${row.id}`, row]),
       ...members.map(row => [`members:${row.id}`, row]),
       ...tasks.map(row => [`tasks:${row.id}`, row]),
       ...trackers.map(row => [`trackers:${row.id}`, row])
     ]);
     return {
-      activity, trackers: trackers.map(({ id, name, url }) => ({ id, name, url })),
+      // UI edits must never mutate the original values used by concurrency guards.
+      activity, recurring: recurring.map(row => ({ ...row })), completions: completions.map(row => ({ ...row })), purchases: purchases.map(row => ({ ...row })), trackers: trackers.map(({ id, name, url }) => ({ id, name, url })),
       members: members.map(({ id, name, role }) => ({ id, name, role })),
-      tasks: tasks.map(({ id, title, description, member_id, status, due, priority, latest_note, note_updated_at }) => ({
-        id, title, description: description || '', memberId: member_id || '', status, due, priority,
+      tasks: tasks.map(({ id, area, title, description, member_id, status, due, priority, latest_note, note_updated_at }) => ({
+        id, area: area || 'operations', title, description: description || '', memberId: member_id || '', status, due, priority,
         latest_note: latest_note || '', note_updated_at: note_updated_at || null
       }))
     };
@@ -96,9 +106,10 @@ window.FormaStore = (() => {
 
   async function save(before, after) {
     const removedMembers = new Set(before.members.filter(person => !after.members.some(next => next.id === person.id)).map(person => person.id));
+    const removedRoutines = new Set((before.recurring || []).filter(row => !(after.recurring || []).some(next => next.id === row.id)).map(row => row.id));
     let writes = 0;
     try {
-      for (const [collection, table] of [['members', 'board_members'], ['tasks', 'board_tasks'], ['trackers', 'board_trackers']]) {
+      for (const [collection, table] of [['members', 'board_members'], ['tasks', 'board_tasks'], ['trackers', 'board_trackers'], ['recurring','board_recurring'], ['completions','board_completions'], ['purchases','board_purchases']]) {
         for (const item of (after[collection] || [])) {
           const old = (before[collection] || []).find(row => row.id === item.id);
           const row = toRow(collection, item);
@@ -116,8 +127,9 @@ window.FormaStore = (() => {
         }
       }
       // Explicit reassignments happen first; the FK handles remaining assignments.
-      for (const [collection, table] of [['tasks', 'board_tasks'], ['members', 'board_members'], ['trackers', 'board_trackers']]) {
+      for (const [collection, table] of [['completions','board_completions'], ['tasks', 'board_tasks'], ['members', 'board_members'], ['trackers', 'board_trackers'], ['recurring','board_recurring'], ['purchases','board_purchases']]) {
         for (const item of (before[collection] || [])) {
+          if (collection === 'completions' && removedRoutines.has(item.recurring_id)) continue;
           if ((after[collection] || []).some(row => row.id === item.id)) continue;
           const result = await request(guardedPath(table, collection, item, fields[collection]), 'DELETE');
           if (!result.length) throw new Error('This record changed or was removed by someone else. Refresh before deleting it.');
@@ -131,17 +143,17 @@ window.FormaStore = (() => {
   }
   async function users() {
     const rows = []; let page;
-    do { page = await request('workspace_access?select=email,display_name,role,created_at&order=email.asc&limit=500&offset=' + rows.length); rows.push(...page); } while (page.length);
+    do { page = await request('workspace_access?select=email,username,display_name,role,created_at&order=username.asc&limit=500&offset=' + rows.length); rows.push(...page); } while (page.length);
     return rows;
   }
   async function saveUser(user, original) {
-    const body = { display_name: user.display_name, role: user.role };
-    const query = original ? new URLSearchParams({ email: equals(original.email), role: equals(original.role), display_name: equals(original.display_name) }) : null;
+    const body = { username: user.username, display_name: user.display_name, role: user.role };
+    const query = original ? new URLSearchParams({ email: equals(original.email), username: equals(original.username), role: equals(original.role), display_name: equals(original.display_name) }) : null;
     const result = await request('workspace_access' + (query ? '?' + query : ''), original ? 'PATCH' : 'POST', original ? body : { ...body, email: user.email });
     if (!result.length) throw new Error('User access changed. Refresh Users and try again.');
   }
   async function removeUser(user) {
-    const result = await request('workspace_access?' + new URLSearchParams({ email: equals(user.email), role: equals(user.role), display_name: equals(user.display_name) }), 'DELETE');
+    const result = await request('workspace_access?' + new URLSearchParams({ email: equals(user.email), username: equals(user.username), role: equals(user.role), display_name: equals(user.display_name) }), 'DELETE');
     if (!result.length) throw new Error('User access changed. Refresh Users and try again.');
   }
   return { enabled, load, save, users, saveUser, removeUser };

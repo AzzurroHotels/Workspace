@@ -15,6 +15,9 @@ function icon(name, className = '') {
     form: '<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 8h1M12 8h4M8 12h1M12 12h4M8 16h1M12 16h4"/>',
     link: '<path d="M10 13a5 5 0 0 0 7 .2l3-3a5 5 0 0 0-7-7l-2 2M14 11a5 5 0 0 0-7-.2l-3 3a5 5 0 0 0 7 7l2-2"/>',
     arrow: '<path d="M6 18L18 6M6 6h12v12"/>',
+    repeat: '<path d="M4 7h14l-3-3M20 17H6l3 3M20 7v5M4 17v-5"/>',
+    tools: '<path d="M14 6a5 5 0 0 0-6 6L3 17a3 3 0 0 0 4 4l5-5a5 5 0 0 0 6-6l-3 3-4-4z"/>',
+    cart: '<path d="M3 4h3l3 12h10l3-8H7M10 21h1M18 21h1"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
     check: '<path d="M5 12l4 4L20 5"/>',
     search: '<circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/>'

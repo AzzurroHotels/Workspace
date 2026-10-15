@@ -44,3 +44,8 @@ Desktop screenshots were inspected at 1440px. The first pass stretched the upcom
 ## Feature preservation correction
 
 Restored whole-card pointer and Enter/Space opening, explicit Edit buttons, and active plus completed work when a member tab is selected. Existing timestamps, Notes, status controls, drag/drop, filters, list view and export remain available. Viewers open read-only details and receive no Edit action.
+
+
+## Workflow additions (local preview)
+
+Retain the approved paper palette and type: cream #f3eddf, ink #29261f, red #b52e36, sage #deead6, ochre #f4e5b5 and lilac #e5ddeb; Barlow Condensed headings and DM Sans controls/body. Daily and weekly routines use side-by-side schedules on desktop, with left-aligned time rails and restrained text-backed reminder colors. Purchase items use a compact full-width ledger with quantity, location, priority and purchase actions. This avoids making the shopping list look like another Kanban board while keeping the established Azzurro identity. The sidebar order follows the requested work sequence. New layouts collapse to one column on narrower screens. Existing Operations and Maintenance share the complete board component rather than introducing divergent controls.
