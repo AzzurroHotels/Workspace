@@ -5,6 +5,8 @@ Supabase project: `iunkhgyoujdxybufjcgo`.
 
 ## Current release — 15 October 2026
 
+Published to the existing GitHub Pages URL. PR #1 is merged into `main`, Pages reported a successful build, and the live browser loaded all 37 tasks, 4 members, timestamp labels and the Trackers tab. Sidebar collapse/reopen worked, with no JavaScript errors. Original full-row fingerprints still matched after live verification.
+
 The user asked to keep normal entry for now and publish the frontend. `config.js` explicitly selects `accessMode: 'shared-name'`. This preserves the existing name-based shared workspace and its editing permissions. Names remain self-reported; this mode does not provide authenticated staff roles. The prepared Users interface is hidden until staff sign-in is activated. No passwords or email sender are required for the current release.
 
 The release includes the paper theme, restored whole-card/Edit controls and completed member tasks, shared tracker tiles, timestamped notes, sidebar collapse above the wordmark, filters/list/export, responsive layouts and persistence fixes. Assets use a release query version to avoid mixing old cached scripts with the new page. GitHub Pages continues to serve the root of `main`; `.nojekyll` keeps the application static.
