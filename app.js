@@ -16,7 +16,7 @@ const initials = name => String(name || '').trim().split(/\s+/).filter(Boolean).
 const dateLabel = (date, full = false) => date ? new Date(date + 'T12:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', ...(full ? { year: 'numeric' } : {}) }) : 'No due date';
 const timestamp = date => date ? new Date(date).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' }) : 'Not recorded';
 
-let visitorName = demoMode ? 'Demo administrator' : '';
+let visitorName = demoMode ? 'Demo administrator' : sharedNameMode ? String(storage.get('sessionStorage', 'forma-visitor') || '').trim().slice(0, 70) : '';
 window.boardActorName = () => visitorName;
 let cacheWarning = '';
 function loadCache() {
@@ -99,14 +99,17 @@ async function refresh(force = false) {
   busy = true;
   const generation = authGeneration;
   try {
+    let roleChanged = false;
+    if (!sharedNameMode) {
     let profile;
     try { profile = await WorkspaceAuth.verify(); }
     catch (error) { if (generation === authGeneration) clearAccess(error.message); return; }
     if (generation !== authGeneration) return;
     if (!profile) { clearAccess(); return; }
-    const roleChanged = authProfile?.role !== profile.role;
+    roleChanged = authProfile?.role !== profile.role;
     authProfile = profile; visitorName = profile.display_name;
     if (roleChanged && $('#editor').open) $('#editor').close();
+    }
     const next = await FormaStore.load();
     if (generation !== authGeneration) return;
     const changed = roleChanged || !ready || stale || JSON.stringify(next) !== JSON.stringify(state);
@@ -125,17 +128,21 @@ async function refresh(force = false) {
 
 function navigate(next) {
   if (!['dashboard', 'board', 'members', 'users', 'trackers'].includes(next) || busy) return;
-  view = next === 'users' && !isAdmin() ? 'dashboard' : next;
+  view = next === 'users' && !canManageUsers() ? 'dashboard' : next;
   if (location.hash !== '#' + next) history.pushState(null, '', '#' + next);
   render(); $('#content').focus({ preventScroll: true });
 }
 function render() {
   if (!visitorName) { if (FormaStore.enabled) loginScreen(); else setupScreen(); return; }
-  if (view === 'users' && !isAdmin()) view = 'dashboard';
-  $('[data-view="users"]').hidden = !isAdmin();
+  if (view === 'users' && !canManageUsers()) view = 'dashboard';
+  $('[data-view="users"]').hidden = !canManageUsers();
   const tabScroll = $('.tabs')?.scrollLeft || 0;
   document.body.classList.remove('welcome-mode');
-  $('#visitor-bar').innerHTML = `<span class="avatar" aria-hidden="true">${esc(initials(visitorName))}</span><span class="visitor-name" title="${esc(visitorName)}">${esc(visitorName)}</span>${FormaStore.enabled ? `<span class="access-role ${isAdmin() ? 'admin' : 'viewer'}">${isAdmin() ? 'Admin' : 'Viewer'}</span><button class="secondary" id="sign-out">Sign out</button>` : '<span class="preview-tag">Design preview</span>'}`;
+  $('#visitor-bar').innerHTML = `<span class="avatar" aria-hidden="true">${esc(initials(visitorName))}</span><span class="visitor-name" title="${esc(visitorName)}">${esc(visitorName)}</span>${sharedNameMode ? '<button class="secondary" id="change-name">Change name</button>' : FormaStore.enabled ? `<span class="access-role ${isAdmin() ? 'admin' : 'viewer'}">${isAdmin() ? 'Admin' : 'Viewer'}</span><button class="secondary" id="sign-out">Sign out</button>` : '<span class="preview-tag">Design preview</span>'}`;
+  $('#change-name')?.addEventListener('click', () => {
+    storage.remove('sessionStorage', 'forma-visitor');
+    clearAccess();
+  });
   $('#sign-out')?.addEventListener('click', async () => { try { await WorkspaceAuth.signOut(); clearAccess(); } catch (error) { toast(error.message, true); } });
   $('#date').textContent = new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Sydney', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
   document.querySelectorAll('nav button').forEach(button => {
@@ -427,4 +434,4 @@ document.addEventListener('keydown', event => {
 });
 initSidebar();
 initializeAccess();
-if (FormaStore.enabled) { WorkspaceAuth.onSignOut(() => clearAccess()); setInterval(() => refresh(), 30000); window.addEventListener('focus', () => refresh()); }
+if (FormaStore.enabled) { if (!sharedNameMode) WorkspaceAuth.onSignOut(() => clearAccess()); setInterval(() => refresh(), 30000); window.addEventListener('focus', () => refresh()); }

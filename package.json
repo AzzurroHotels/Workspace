@@ -12,6 +12,7 @@
     "check": "node --check app.js && node --check store.js && node --check auth.js && node --check access-ui.js && node --check ui.js && node --check trackers.js",
     "build": "esbuild scripts/auth-sdk-entry.js --bundle --platform=browser --format=iife --global-name=supabase --minify --outfile=vendor/supabase.js",
     "test:access-ui": "node tests/auth-ui.cjs",
+    "test:shared-ui": "node tests/shared-ui.cjs",
     "build:site": "npm run build && node scripts/package-site.mjs"
   },
   "dependencies": {

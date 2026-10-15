@@ -106,7 +106,7 @@ ALTER TABLE public.board_tasks
   ADD CONSTRAINT board_tasks_note_length CHECK (char_length(latest_note) <= 3000);
 ALTER TABLE public.board_activity ADD COLUMN actor_user_id uuid, ADD COLUMN actor_email text;
 
-CREATE FUNCTION private.stamp_task_note() RETURNS trigger
+CREATE OR REPLACE FUNCTION private.stamp_task_note() RETURNS trigger
 LANGUAGE plpgsql SET search_path = '' AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
@@ -117,6 +117,7 @@ BEGIN
   RETURN NEW;
 END $$;
 REVOKE ALL ON FUNCTION private.stamp_task_note() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS stamp_task_note ON public.board_tasks;
 CREATE TRIGGER stamp_task_note BEFORE INSERT OR UPDATE ON public.board_tasks
 FOR EACH ROW EXECUTE FUNCTION private.stamp_task_note();
 

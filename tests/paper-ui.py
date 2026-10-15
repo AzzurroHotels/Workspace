@@ -141,7 +141,7 @@ with sync_playwright() as p:
         passed('New task updates retain timestamps across reload, board/list views and history')
 
         locked_context = browser.new_context()
-        locked_context.route('**/config.js', lambda route: route.fulfill(content_type='text/javascript', body='window.FORMA_CONFIG={};'))
+        locked_context.route('**/config.js*', lambda route: route.fulfill(content_type='text/javascript', body='window.FORMA_CONFIG={};'))
         locked_context.add_init_script("sessionStorage.setItem('forma-visitor','Forged admin');localStorage.setItem('azzurro-board-v2','{\"tasks\":[],\"members\":[]}');")
         locked = locked_context.new_page()
         locked.goto(BASE, wait_until='networkidle')

@@ -25,7 +25,7 @@ function pass(name) { results.push({name,status:'passed'}); console.log('PASS',n
         sessionStorage.setItem('test-initialized','yes');
       }
     },{signedIn,session:auth.session});
-    await context.route('**/config.js',route=>route.fulfill({contentType:'text/javascript',body:'window.FORMA_CONFIG={supabaseUrl:"https://workspace.test",supabasePublishableKey:"test"};'}));
+    await context.route('**/config.js*',route=>route.fulfill({contentType:'text/javascript',body:'window.FORMA_CONFIG={supabaseUrl:"https://workspace.test",supabasePublishableKey:"test"};'}));
     await context.route('**/*.supabase.co/**',route=>route.abort());
     await context.route('https://workspace.test/**',async route=>{
       const request=route.request(),url=new URL(request.url());

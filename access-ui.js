@@ -1,6 +1,21 @@
 let authProfile = null, authGeneration = 0, authStarting = false;
 let usersCache = [], usersGeneration = 0;
-const isAdmin = () => demoMode || authProfile?.role === 'admin';
+// Shared entry retains existing editing behavior; it is not authenticated admin access.
+const isAdmin = () => demoMode || sharedNameMode || authProfile?.role === 'admin';
+const canManageUsers = () => !sharedNameMode && isAdmin();
+function nameScreen() {
+  document.body.classList.add('welcome-mode');
+  $('#content').innerHTML = `<div class="welcome-card"><p class="eyebrow">Azzurro Workspace</p><h1>A good day starts here.</h1><p class="subtitle">Enter your name so your team can see who added each update.</p><form id="name-form"><label for="visitor-name">Your name</label><input id="visitor-name" autocomplete="name" required maxlength="70" placeholder="Your name"><button class="primary" type="submit">Open workspace</button></form></div>`;
+  $('#name-form').onsubmit = async event => {
+    event.preventDefault();
+    const input = $('#visitor-name'), name = input.value.trim();
+    if (!name) { input.setCustomValidity('Enter your name.'); input.reportValidity(); return; }
+    input.setCustomValidity(''); visitorName = name;
+    storage.set('sessionStorage', 'forma-visitor', name);
+    await initializeAccess();
+  };
+  $('#visitor-name').oninput = event => event.target.setCustomValidity('');
+}
 function clearAccess(message = '') {
   authGeneration++;
   authProfile = null; visitorName = ''; state = emptyState(); baseline = emptyState();
@@ -10,6 +25,7 @@ function clearAccess(message = '') {
   loginScreen(message);
 }
 function loginScreen(message = '') {
+  if (sharedNameMode) { nameScreen(); return; }
   document.body.classList.add('welcome-mode');
   $('#content').innerHTML = `<div class="welcome-card"><div class="welcome-logo"><span class="brand-mark" aria-hidden="true">a</span>Azzurro Workspace</div><p class="eyebrow">Staff access</p><h1>Welcome to your workspace.</h1><p class="subtitle">Sign in with your approved email to see your team’s tasks and updates.</p><form id="login-form"><label for="login-email">Work email</label><input id="login-email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"><button class="primary" type="submit" ${authStarting ? 'disabled' : ''}>${authStarting ? 'Checking your session…' : 'Email me a sign-in link'}</button></form><p id="auth-message" class="auth-message" role="status">${esc(message)}</p><small>Only users added by an administrator can access this workspace. Your link opens securely in this browser.</small><div class="auth-actions"><button class="text-button" id="retry-access">Check access again</button><button class="text-button" id="reset-session">Use another email</button></div></div>`;
   $('#login-form').onsubmit = async event => {
@@ -25,6 +41,10 @@ function loginScreen(message = '') {
   $('#reset-session').onclick = async () => { try { await WorkspaceAuth.signOut(); clearAccess(); } catch (error) { $('#auth-message').textContent = error.message; } };
 }
 async function initializeAccess() {
+  if (sharedNameMode) {
+    if (!visitorName) { nameScreen(); return; }
+    render(); await refresh(true); return;
+  }
   if (!FormaStore.enabled) { if (demoMode) render(); else setupScreen(); return; }
   const generation = ++authGeneration;
   authStarting = true; loginScreen();
@@ -42,7 +62,7 @@ function viewerTask(id) {
   openDialog(`<h2 id="dialog-title">${esc(task.title)}</h2><p class="subtitle">Task details · Read-only access</p><div class="task-facts">${badge(task.status)} ${priorityBadge(task.priority)}<p>Assigned to <b>${esc(member(task.memberId)?.name || 'Unassigned')}</b></p><p>Due ${esc(dateLabel(task.due, true))}</p></div><p class="read-description">${esc(task.description || 'No description')}</p>${notePreview(task)}${activityHTML(id)}<div class="actions"><button type="button" class="secondary" id="cancel">Close</button></div>`);
 }
 async function users() {
-  if (!isAdmin()) return;
+  if (!canManageUsers()) return;
   const generation = ++usersGeneration;
   $('#body').innerHTML = '<div class="panel access-intro"><h2>Choose who can access your workspace.</h2><p><b>Admin</b> can manage tasks, members, trackers, and user access. <b>Viewer</b> can read tasks, notes, and history, open trackers, and export reports.</p><p>Adding a user grants access to their verified email. It does not send an invitation.</p></div><div id="users-list" role="status">Loading users…</div>';
   try {

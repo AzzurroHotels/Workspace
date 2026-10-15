@@ -5,11 +5,15 @@ Reviewed 15 October 2026. Repository: https://github.com/AzzurroHotels/Workspace
 Baseline commit: `866e482b478d9dbcf4faffa8529e750830e68767`.
 Local branch: `enhance/workspace-ui`. Desktop is the primary design target, following the user's clarification.
 
+## Release decision
+
+On 15 October the user deferred email authentication and requested normal entry for the live rollout. The frontend now explicitly retains name-based shared access; Users and authenticated role restrictions remain deferred. The shared_trackers migration adds tracker persistence and server timestamps without rewriting existing data. The security findings below remain applicable until staff sign-in is activated. See RELEASE.md for current steps.
+
 ## Result
 
-Implemented a desktop-first paper design with cream surfaces, dark ink, red controls and self-hosted typography, status-specific colors, improved navigation and forms, and fixes to task visibility, editing, persistence, refresh behavior, and REST concurrency handling. Prepared on `enhance/workspace-ui`; no production deployment, migration, or database write was performed. See RELEASE.md for current release readiness.
+Implemented a desktop-first paper design with cream surfaces, dark ink, red controls and self-hosted typography, status-specific colors, improved navigation and forms, and fixes to task visibility, editing, persistence, refresh behavior, and REST concurrency handling. Prepared on `enhance/workspace-ui`; the additive shared tracker/timestamp migration has now been applied, with every original row fingerprint preserved. See RELEASE.md for current release status.
 
-Supabase access was granted after the initial denial. The backend schema, permissions, triggers, advisors and targeted logs have now been inspected read-only. Staff sign-in, an Admin/Viewer Users tab and a database migration are implemented and tested locally. The live site still has the original application and permissive policies. No production write, email, migration or deployment has been performed.
+Supabase access was granted after the initial denial. The backend schema, permissions, triggers, advisors and targeted logs have now been inspected read-only. Staff sign-in, an Admin/Viewer Users tab and a database migration are implemented and tested locally. The live site still has the original application and permissive policies. No production task/member/history rows were changed by the migration, and no sign-in email has been sent. The staff-only migrations remain deferred.
 
 ## Fixed findings
 
@@ -33,7 +37,7 @@ Supabase access was granted after the initial denial. The backend schema, permis
 
 ## Visual direction and flow review
 
-1. **Entry — working locally:** normal startup requires a verified email-link session and approved membership. Name-only entry is removed. Missing configuration fails closed. Only a deliberate loopback design preview uses fixed fictional identity; a preview flag on a public host cannot enable it.
+1. **Entry — working locally:** the explicitly configured shared-name mode retains normal entry for this release. The prepared staff mode requires a verified email-link session and approved membership. Missing configuration fails closed. Only a deliberate loopback design preview uses fixed fictional identity; a preview flag on a public host cannot enable it.
 2. **Dashboard — working:** four softly colored metrics, upcoming deadlines, overdue shortcut, and a readable calendar. Long calendar labels truncate visually but remain named buttons with full titles; day counts reveal all tasks on phones.
 3. **Task boards — working:** paper navigation, red actions, ochre/blue/lilac/sage status columns, four-column desktop layout, direct status selection, notes, and readable list view. All filters use the same task selection as export.
 4. **Task editing — working:** spacious 640px desktop dialog, two-column metadata fields, separate note save, update history, validation, deletion confirmation, and error recovery.

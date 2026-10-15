@@ -1,0 +1,62 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const fixtures = require('./fixtures.cjs');
+const output = path.resolve(process.env.TEST_OUTPUT || 'test-results');
+fs.mkdirSync(output,{recursive:true});
+(async()=>{
+  const browser = await playwright.chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL||'msedge'});
+  const errors=[],requests=[];
+  try {
+    const context=await browser.newContext({viewport:{width:1440,height:1000}});
+    const fixture=fixtures();
+    const db={board_tasks:fixture.tasks.map(({memberId,...task})=>({...task,member_id:memberId||null})),board_members:fixture.members,board_activity:[],board_trackers:[]};
+    await context.route('**/*.supabase.co/**',route=>route.abort());
+    await context.route('**/config.js*',route=>route.fulfill({contentType:'text/javascript',body:'window.FORMA_CONFIG={accessMode:"shared-name",supabaseUrl:"https://workspace.test",supabasePublishableKey:"test-public"};'}));
+    await context.route('https://workspace.test/**',async route=>{
+      const request=route.request(),url=new URL(request.url()),table=url.pathname.split('/').pop();
+      requests.push({method:request.method(),path:url.pathname,headers:request.headers()});
+      assert.ok(db[table], 'Shared mode must not request auth or user-access APIs');
+      assert.equal(request.headers().authorization,'Bearer test-public');
+      assert.equal(decodeURIComponent(request.headers()['x-board-actor']), 'Shared operator');
+      let rows=db[table];
+      for(const [key,value] of url.searchParams) if(!['select','order','limit','offset'].includes(key)) rows=rows.filter(row=>value==='is.null' ? row[key]==null : String(row[key])===value.slice(3));
+      if(request.method()==='GET') return route.fulfill({json:rows.slice(Number(url.searchParams.get('offset')||0),Number(url.searchParams.get('offset')||0)+500)});
+      const body=request.postDataJSON();
+      if(request.method()==='POST'){db[table].push(body);rows=[body];}
+      else if(request.method()==='PATCH') rows.forEach(row=>Object.assign(row,body));
+      else if(request.method()==='DELETE') db[table]=db[table].filter(row=>!rows.includes(row));
+      await route.fulfill({json:rows});
+    });
+    const page=await context.newPage(); page.on('pageerror',e=>errors.push(e.message));
+    await page.goto(process.env.TEST_URL||'http://127.0.0.1:4173');
+    await page.locator('#name-form').waitFor();
+    assert.equal(requests.length,0);
+    await page.locator('#visitor-name').fill('Shared operator');
+    await page.getByRole('button',{name:'Open workspace',exact:true}).click();
+    await page.locator('.heading').waitFor();
+    assert.equal(await page.locator('[data-view="users"]').isVisible(),false);
+    assert.equal(await page.locator('#visitor-bar .access-role').count(),0);
+    await page.reload(); await page.locator('.heading').waitFor();
+    assert.equal(await page.locator('#name-form').count(),0);
+    await page.locator('[data-view="board"]').click();
+    await page.locator('[data-filter="alex"]').click();
+    await page.locator('[data-edit-task="task-1"]').click();
+    await page.locator('#editor[open]').waitFor(); await page.locator('#cancel').click();
+    await page.locator('#sidebar-toggle').click(); assert.equal(await page.locator('#workspace-sidebar').isVisible(),false);
+    await page.locator('#sidebar-toggle').click();
+    await page.locator('[data-view="trackers"]').click(); await page.locator('#add-tracker').click();
+    await page.locator('#tracker-name').fill('Shared roster'); await page.locator('#tracker-url').fill('https://example.com/roster');
+    await page.locator('#tracker-form button[type="submit"]').click(); await page.locator('.tracker-tile').waitFor();
+    assert.equal(db.board_trackers.length,1);
+    assert.equal(db.board_tasks.length,fixture.tasks.length);
+    await page.goto((process.env.TEST_URL||'http://127.0.0.1:4173')+'/#users');
+    await page.locator('.heading').waitFor(); assert.equal(await page.locator('#add-user').count(),0);
+    await page.locator('#change-name').click(); await page.locator('#name-form').waitFor();
+    assert.equal(await page.locator('.heading').count(),0);
+    assert.deepEqual(errors,[]);
+    fs.writeFileSync(path.join(output,'shared-verification.json'),JSON.stringify({passed:true,checks:['name entry and session restore','no auth or role-management requests','restored board editing','sidebar collapse and reopen','shared tracker persistence','Users route guarded','change name clears workspace','no JavaScript errors']},null,2));
+    console.log('PASS Shared-mode release: entry, attribution, restored board, sidebar, trackers, deferred users and change name');
+  } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

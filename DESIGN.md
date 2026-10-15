@@ -35,7 +35,7 @@ Source: https://github.com/anthropics/skills. Repository metadata observed 15 Oc
 
 ## Access and preview
 
-Normal startup requires verified Supabase email identity and approval in Users. Missing backend configuration fails closed. Name-only entry is removed. A deliberate loopback-only design preview uses fictional data and a fixed Demo administrator label; it cannot access production and must not be presented as successful staff authentication.
+The release explicitly retains the current name-based entry at the user’s request. Without that explicit configuration, startup requires verified Supabase email identity and approval in Users. Missing backend configuration fails closed. A deliberate loopback-only design preview uses fictional data and a fixed Demo administrator label; it cannot access production and must not be presented as successful staff authentication.
 
 ## Visual review
 

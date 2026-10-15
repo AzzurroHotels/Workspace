@@ -10,7 +10,8 @@ window.FormaStore = (() => {
   let snapshots = new Map();
 
   async function request(path, method = 'GET', body) {
-    const accessToken = await window.WorkspaceAuth.token();
+    const sharedEntry = config.accessMode === 'shared-name';
+    const accessToken = sharedEntry ? config.supabasePublishableKey : await window.WorkspaceAuth.token();
     let response;
     try {
       response = await fetch(config.supabaseUrl.replace(/\/$/, '') + '/rest/v1/' + path, {
@@ -19,7 +20,8 @@ window.FormaStore = (() => {
           apikey: config.supabasePublishableKey,
           Authorization: 'Bearer ' + accessToken,
           'Content-Type': 'application/json',
-          Prefer: 'return=representation'
+          Prefer: 'return=representation',
+          ...(sharedEntry ? { 'x-board-actor': encodeURIComponent(String(window.boardActorName?.() || 'Unknown').trim().slice(0, 70)) } : {})
         },
         signal: AbortSignal.timeout(20000),
         ...(body === undefined ? {} : { body: JSON.stringify(body) })

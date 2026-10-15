@@ -17,7 +17,7 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
   const errors = [];
   async function newPage(data, width = 1440) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, acceptDownloads: true });
-    await context.route('**/config.js', route => route.fulfill({ contentType: 'text/javascript', body: 'window.FORMA_CONFIG = {preview:true};' }));
+    await context.route('**/config.js*', route => route.fulfill({ contentType: 'text/javascript', body: 'window.FORMA_CONFIG = {preview:true};' }));
     // Never contact a real Supabase project from this test suite.
     await context.route('**/*.supabase.co/**', route => route.abort());
     const page = await context.newPage(); page.on('pageerror', error => errors.push(error.message));
@@ -146,7 +146,7 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
     const authFixture = require('./auth-fixture.cjs');
     await context.addInitScript(session => localStorage.setItem('azzurro-staff-auth', JSON.stringify(session)), authFixture.session);
-    await context.route('**/config.js', route => route.fulfill({ contentType: 'text/javascript', body: 'window.FORMA_CONFIG={supabaseUrl:"https://workspace.test",supabasePublishableKey:"test"};' }));
+    await context.route('**/config.js*', route => route.fulfill({ contentType: 'text/javascript', body: 'window.FORMA_CONFIG={supabaseUrl:"https://workspace.test",supabasePublishableKey:"test"};' }));
     const sharedFixture = fixture();
     const db = { board_members: sharedFixture.members, board_tasks: sharedFixture.tasks.map(({ memberId, ...task }) => ({ ...task, member_id: memberId || null })), board_activity: [] };
     let failLoad = false, writes = 0, ambiguousCreate = false;

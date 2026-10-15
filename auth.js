@@ -1,7 +1,7 @@
 // Only public configuration belongs here. Access is enforced by database RLS.
 window.WorkspaceAuth = (() => {
   const config = window.FORMA_CONFIG || {};
-  const enabled = Boolean(config.supabaseUrl && config.supabasePublishableKey);
+  const enabled = Boolean(config.supabaseUrl && config.supabasePublishableKey) && config.accessMode !== 'shared-name';
   const client = enabled ? window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey, {
     auth: { storageKey: 'azzurro-staff-auth', flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
   }) : null;

@@ -1,16 +1,18 @@
 # Azzurro Workspace
 
-A desktop-first static HTML/CSS/JavaScript workspace with Supabase. The bundled official SDK manages email-link sign-in; database policies enforce Admin and Viewer access.
+A desktop-first static HTML/CSS/JavaScript workspace with Supabase. The current release retains name-based shared entry as requested. Email-link sign-in and Admin/Viewer policies are prepared for a later activation.
 
 ## Local preview
 
-Use Node.js 22 or newer (verified with Node 24). Run npm start and open http://127.0.0.1:4173. Normal startup uses the configured shared workspace and requires an approved, verified staff email. Missing configuration fails closed; no name-entry mode remains.
+Use Node.js 22 or newer (verified with Node 24). Run npm start and open http://127.0.0.1:4173. Normal startup uses the configured shared workspace. The explicit `accessMode: 'shared-name'` flag preserves existing name entry; without that flag the app requires approved email sign-in. Missing backend configuration fails closed.
 
 Run npm run demo for an explicitly labelled, loopback-only design preview with fictional sample data and a fixed Demo administrator identity. It never contacts Supabase. Set a separate port, such as PORT=4174, to keep the demo separate. On PowerShell use $env:PORT='4174'. Local Users records demonstrate the interface only; they grant no production access.
 
-npm run start:shared is an explicit alias for normal shared mode. Shared mode requires both migrations, the configured signup hook, SMTP, and a verified approved staff account. Never put service-role credentials, SMTP passwords or database passwords in frontend configuration.
+npm run start:shared is an explicit alias for normal shared mode. The current shared-name release requires only the shared_trackers migration. The future staff sign-in mode requires the other two migrations, signup hook, SMTP and a verified approved staff account. Never put service-role credentials, SMTP passwords or database passwords in frontend configuration.
 
 ## Roles and desktop workflows
+
+The role table and Users controls below apply only after staff sign-in is activated. Currently all workspace visitors retain the existing editing access, and Users is hidden.
 
 | Capability | Admin | Viewer |
 | --- | --- | --- |
@@ -43,7 +45,7 @@ npm run build:site
 
 build:site copies only runtime assets into dist/ and does not deploy. Dependency license notices are under vendor/. The Node tests use mocked REST and isolated PGlite PostgreSQL with synthetic identities; production is untouched.
 
-Browser checks require Playwright and a browser. Start npm start, then run npm run test:ui and npm run test:access-ui in another terminal. Install Playwright with npm install --no-save playwright and npx playwright install chromium if needed. Alternatively set PLAYWRIGHT_MODULE to an existing package directory and BROWSER_CHANNEL to msedge or chrome. TEST_URL defaults to http://127.0.0.1:4173 and TEST_OUTPUT to test-results. All auth/database endpoints are intercepted; no real login email is sent.
+Browser checks require Playwright and a browser. Start npm start, then run npm run test:ui and npm run test:access-ui in another terminal. Install Playwright with npm install --no-save playwright and npx playwright install chromium if needed. Alternatively set PLAYWRIGHT_MODULE to an existing package directory and BROWSER_CHANNEL to msedge or chrome. TEST_URL defaults to http://127.0.0.1:4173 and TEST_OUTPUT to test-results. All auth/database endpoints are intercepted; no real login email is sent. Run `npm run test:shared-ui` to verify the current name-based entry and shared tracker flow.
 
 The additional tests/paper-ui.py suite uses Python Playwright and Microsoft Edge by default. Run it against npm run demo with TEST_URL=http://127.0.0.1:4174 and TEST_OUTPUT set as desired; install the Python playwright package if needed. It tests tracker CRUD, actual new-tab navigation with intercepted documents, layout, sidebar persistence, timestamp presentation and fail-closed startup.
 
@@ -51,6 +53,6 @@ Project-local frontend-design and webapp-testing skills from [Anthropic](https:/
 
 ## Release
 
-Production is https://azzurrohotels.github.io/Workspace/. The new frontend and two migrations must be released together. The old app cannot use staff-only policies; a login screen alone does not secure the API.
+Production is https://azzurrohotels.github.io/Workspace/. This release preserves existing name entry and applies only the additive shared_trackers migration. Staff-only policies and email sign-in remain deferred.
 
-See RELEASE.md for the current release status and exact settings, and AUDIT.md for findings/evidence. The release branch is `enhance/workspace-ui`; production deployment is pending SMTP configuration and the coordinated migrations. The production database remains unchanged.
+See RELEASE.md for the current release status and exact settings, and AUDIT.md for findings/evidence. The release branch is `enhance/workspace-ui`, targeting the existing Pages source on `main`. Current database records must be preserved during release. SMTP is required only for the deferred email sign-in activation.

@@ -1,3 +1,4 @@
+const sharedNameMode = FormaStore.enabled && window.FORMA_CONFIG?.accessMode === 'shared-name';
 const demoMode = !FormaStore.enabled && window.FORMA_CONFIG?.preview === true && ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
 function icon(name, className = '') {
   const paths = {

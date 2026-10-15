@@ -30,8 +30,30 @@ test('staff access migration on isolated PostgreSQL', async t => {
     INSERT INTO board_activity(entity,record_id,action,actor_name) VALUES ('tasks','t1','INSERT','Legacy label');
     INSERT INTO auth.users VALUES ('${ids.admin}','vivekalthi@gmail.com',now()),('${ids.viewer}','viewer@example.com',now()),('${ids.unknown}','unknown@example.com',now()),('${ids.unverified}','unverified@example.com',NULL);
   `);
-  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/202610150001_staff_access.sql'),'utf8'));
-  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/202610150002_trackers_and_signup.sql'),'utf8'));
+  const beforeShared = (await db.query("SELECT jsonb_build_object('tasks',(SELECT jsonb_agg(t) FROM board_tasks t),'members',(SELECT jsonb_agg(m) FROM board_members m),'activity',(SELECT jsonb_agg(a) FROM board_activity a)) snapshot")).rows[0].snapshot;
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261015024045_shared_trackers.sql'),'utf8'));
+  await t.test('shared-mode migration preserves every existing task, member and history field',async()=>{
+    const after = (await db.query("SELECT jsonb_build_object('tasks',(SELECT jsonb_agg(t) FROM board_tasks t),'members',(SELECT jsonb_agg(m) FROM board_members m),'activity',(SELECT jsonb_agg(a) FROM board_activity a)) snapshot")).rows[0].snapshot;
+    assert.deepEqual(after,beforeShared);
+  });
+  await t.test('shared-mode tracker CRUD and note timestamps retain self-reported names',async()=>{
+    await db.exec('BEGIN; SET LOCAL ROLE anon');
+    try {
+      await db.query("SELECT set_config('request.headers',$1,true)",[JSON.stringify({'x-board-actor':encodeURIComponent('José Test')})]);
+      await db.exec("INSERT INTO board_trackers(id,name,url) VALUES('shared','Roster','https://example.com/roster')");
+      await db.exec("UPDATE board_trackers SET name='Team roster' WHERE id='shared'");
+      await db.exec("UPDATE board_tasks SET latest_note='Shared update',note_updated_at='2000-01-01' WHERE id='t1'");
+      assert.ok(new Date((await db.query("SELECT note_updated_at FROM board_tasks WHERE id='t1'")).rows[0].note_updated_at).getUTCFullYear()>2000);
+      assert.equal((await db.query("SELECT actor_name FROM board_activity WHERE entity='trackers' AND action='INSERT'")).rows[0].actor_name,'José Test');
+      assert.equal((await db.query("DELETE FROM board_trackers WHERE id='shared' RETURNING id")).rows.length,1);
+      assert.equal((await db.query("SELECT count(*)::int n FROM board_activity WHERE entity='trackers'")).rows[0].n,3);
+      await db.query("SELECT set_config('request.headers',$1,true)",[JSON.stringify({'x-board-actor':'%FF'})]);
+      await db.exec("UPDATE board_tasks SET latest_note='Second shared update' WHERE id='t1'");
+      assert.equal((await db.query("SELECT actor_name FROM board_activity WHERE changes->'latest_note'->>'to'='Second shared update'")).rows[0].actor_name,'Unknown');
+    } finally { await db.exec('ROLLBACK'); }
+  });
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261015024100_staff_access.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261015024101_trackers_and_signup.sql'),'utf8'));
   await db.exec("INSERT INTO workspace_access(email,display_name,role) VALUES ('viewer@example.com','Viewer','viewer'),('unverified@example.com','Unverified','admin')");
   async function asUser(kind, callback, role = 'authenticated') {
     await db.exec('BEGIN');
