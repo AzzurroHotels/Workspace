@@ -13,17 +13,21 @@
     }return guess;
   }
   function parse(text,assets,at=Date.now()){
-    const reports=[],unparsed=[];
-    for(const raw of String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean)){
+    const reports=[],unparsed=[];let context=null;
+    for(let raw of String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean)){
+      raw=raw.replace(/^(?:[-*•]\s+|\d+[.)]\s+)/,'');
+      const heading=property(raw.replace(/:$/,''));if(heading){context=heading;continue;}
+      if(context&&!/^(?:Allen|Darling Harbour|Darling Harbor|Central|Potts Point|PP|Olympic)\b/i.test(raw))raw=context+' | '+raw;
       let parts=raw.split('|').map(s=>s.trim());
       if(parts.length<3){
-        const m=raw.match(/^(Allen|Darling Harbour|Central(?: Sydney)?|Potts Point|PP|Olympic(?: Hotel)?)\s*[:,]?\s+(Ensuite\s+Room\s+\d+[A-Z]?|Room\s+\d+[A-Z]?|(?:Bathroom|Toilet|Shower)\s+[A-Z]?\d+)\s+(?:is\s+)?(blocked|closed|unavailable|open|reopened|available)\b\s*(.*)$/i);
+        const natural=raw.replace(/\s*\|\s*/, ' ');
+        const m=natural.match(/^(Allen|Darling Harbour|Darling Harbor|Central(?: Sydney)?|Potts Point|PP|Olympic(?: Hotel)?)\s*[:,]?\s+(Ensuite\s+Room\s+\d+[A-Z]?|Room\s+\d+[A-Z]?(?:\s+(?:bathroom|ensuite))?|Bathroom\s+Room\s+\d+[A-Z]?|(?:Bathroom|Toilet|Shower)\s+[A-Z]?\d+)\s+(?:is\s+)?(blocked|closed|unavailable|open|reopened|available)\b\s*(.*)$/i);
         if(m&&!/\?/.test(raw)){parts=[m[1],m[2],m[3]];let rest=m[4].replace(/^[\s:–-]+/,'');const since=rest.match(/^since\s+(\d{4}-\d{2}-\d{2}|unknown)\b\s*/i);if(since){parts.push('since '+since[1]);rest=rest.slice(since[0].length);}if(rest)parts.push('reason '+rest);}
       }
       if(parts.length<3){unparsed.push(raw);continue;}
       const p=property(parts[0]),label=norm(parts[1]),state=({blocked:'blocked',closed:'blocked',unavailable:'blocked',open:'available',reopened:'available',available:'available',update:'update'})[norm(parts[2])];
       if(!p||!state){unparsed.push(raw);continue;}
-      const targets=label==='all'&&state==='available'?assets.filter(a=>a.property===p):assets.filter(a=>a.property===p&&(norm(a.label)===label||norm(a.id)===label));
+      const targets=label==='all'&&state==='available'?assets.filter(a=>a.property===p):assets.filter(a=>{if(a.property!==p)return false;if(norm(a.label)===label||norm(a.id)===label)return true;if(a.kind!=='bathroom'||!a.room_id)return false;const room=assets.find(r=>r.id===a.room_id);return room&&[room.label+' bathroom','Bathroom '+room.label,room.label+' ensuite'].map(norm).includes(label);});
       if(!targets.length||(targets.length>1&&label!=='all')){unparsed.push(raw);continue;}
       const fields={closed_on:null,reason:'',action:'',owner:'',eta:''};let bad=false;
       for(const part of parts.slice(3)){
@@ -63,8 +67,9 @@
   }
   function inventoryText(catalog,p){
     const a=catalog.assets.filter(a=>a.property===p),rooms=a.filter(a=>a.kind==='room'),baths=a.filter(a=>a.kind==='bathroom');
-    return `${p==='Allen'?'Allen (Darling Harbour)':p} — room and bathroom register\n\nRooms (${rooms.length}): ${rooms.map(a=>a.label.replace(/^Room /,'')).join(', ')}\n\nBathrooms / toilets / showers (${baths.length}): ${baths.map(a=>a.label).join(', ')}\n\n${catalog.gaps.filter(g=>g.property===p).map(g=>'Inventory check: '+g.note+'\n').join('')}Availability is unconfirmed until reception reports it. No closure dates have been invented.`;
+    return `${p==='Allen'?'Allen (Darling Harbour)':p} — room and bathroom register\n\nRooms (${rooms.length}): ${rooms.map(a=>a.label.replace(/^Room /,'')).join(', ')}\n\nBathrooms / toilets / showers (${baths.length}): ${baths.map(a=>a.label+(a.bathroom_type==='detached'&&a.room_id?' → '+assetsLabel(catalog.assets,a.room_id):'')).join(', ')}\n\n${catalog.gaps.filter(g=>g.property===p).map(g=>'Inventory check: '+g.note+'\n').join('')}Availability is unconfirmed until reception reports it. No closure dates have been invented.`;
   }
+  function assetsLabel(assets,id){return assets.find(a=>a.id===id)?.label||id;}
   function caseText(a){const c=a.current;return `${a.property} — ${a.label}\nClosed since: ${c.closed_on||'date not supplied; first reported '+day(c.first_reported_at)}\nKnown unresolved age: ${Math.floor(c.age_hours/24)} days ${Math.floor(c.age_hours%24)} hours\nIssue: ${c.reason||'not supplied'}\nAction needed: ${c.action||'not supplied'}\nOwner: ${c.owner||'not supplied'}\nETA: ${c.eta||'not supplied'}`;}
   return{properties,norm,day,property,dateOK,sydneyEnd,parse,replay,inventoryText,caseText};
 });

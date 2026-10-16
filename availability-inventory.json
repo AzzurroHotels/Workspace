@@ -1,14 +1,18 @@
 {
-  "verifiedAt": "2026-10-16T08:09:08.627Z",
-  "source": "Live Property Info checked against named room/bathroom rows on 16 October 2026; codes and credentials excluded.",
+  "verifiedAt": "2026-10-16T08:47:51.499723+00:00",
+  "source": "Live Property Info tables and all eight floor plans checked on 16 October 2026. Access credentials excluded.",
   "gaps": [
     {
       "property": "Central",
-      "note": "Summary says 12 rooms; only 11 room identifiers are listed. Summary says 6 bathrooms; named shared and ensuite entries total 7."
+      "note": "The summary says 12 rooms and 6 bathrooms, but the named layout and floor plans show 11 rooms and 7 bathrooms (3 ensuites + 4 shared). No missing room number has been invented."
     },
     {
       "property": "Potts Point",
-      "note": "Summary says 9 bathroom/toilet/shower facilities; only 6 have named entries. Locations of remaining facilities need confirmation."
+      "note": "The summary lists 9 bathroom/toilet/shower facilities, but the named table, floor plan and cleaning register identify only 6 areas. Reception must confirm the other facility identifiers or correct the summary."
+    },
+    {
+      "property": "Olympic",
+      "note": "The room table omits ensuite details for owner-occupied Rooms 20, 22 and 25; their ensuites are labelled on the second-floor plan and are included here. There are 20 ensuites and 11 named detached bathrooms; the amenities summary says 20 + 10. Bathroom F1 has no assigned room. Reception must confirm this discrepancy."
     }
   ],
   "assets": [
@@ -21,7 +25,12 @@
       "location": "",
       "note": "4 people ensuite",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people ensuite",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:bathroom:ensuite-room-101",
@@ -30,9 +39,14 @@
       "label": "Ensuite Room 101",
       "floor": "1st level",
       "location": "Room 101",
-      "note": "",
+      "note": "Private bathroom inside Room 101",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "central:room:room-101",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "central:room:room-102",
@@ -43,7 +57,12 @@
       "location": "",
       "note": "6 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-103",
@@ -54,7 +73,12 @@
       "location": "",
       "note": "4 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-104",
@@ -65,7 +89,12 @@
       "location": "",
       "note": "4 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-201",
@@ -76,7 +105,12 @@
       "location": "",
       "note": "6 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-202",
@@ -87,7 +121,12 @@
       "location": "",
       "note": "2 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "2 people shared",
+      "building": "",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-203",
@@ -98,7 +137,12 @@
       "location": "",
       "note": "2 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "2 people shared",
+      "building": "",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-204",
@@ -109,7 +153,12 @@
       "location": "",
       "note": "6 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-205",
@@ -120,7 +169,12 @@
       "location": "",
       "note": "6 people shared",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:room:room-206",
@@ -131,7 +185,12 @@
       "location": "",
       "note": "6 people ensuite",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people ensuite",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:bathroom:ensuite-room-206",
@@ -140,9 +199,14 @@
       "label": "Ensuite Room 206",
       "floor": "2nd level",
       "location": "Room 206",
-      "note": "",
+      "note": "Private bathroom inside Room 206",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "central:room:room-206",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "central:room:room-207",
@@ -153,7 +217,12 @@
       "location": "",
       "note": "2 people ensuite",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "2 people ensuite",
+      "building": "",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "central:bathroom:ensuite-room-207",
@@ -162,9 +231,14 @@
       "label": "Ensuite Room 207",
       "floor": "2nd level",
       "location": "Room 207",
-      "note": "",
+      "note": "Private bathroom inside Room 207",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "central:room:room-207",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "central:bathroom:bathroom-1",
@@ -175,7 +249,12 @@
       "location": "Next to dining area",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "central:bathroom:bathroom-2",
@@ -186,7 +265,12 @@
       "location": "Next to dining area",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "central:bathroom:bathroom-3",
@@ -197,7 +281,12 @@
       "location": "Next to dining area",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "central:bathroom:bathroom-4",
@@ -208,7 +297,12 @@
       "location": "Next to Room 207",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "potts-point:room:room-1",
@@ -219,7 +313,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Beds",
+      "building": "143",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-2",
@@ -230,7 +329,12 @@
       "location": "",
       "note": "Shared Dormitory with 6 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 6 Beds",
+      "building": "143",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-3",
@@ -241,7 +345,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Beds",
+      "building": "143",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-4",
@@ -252,7 +361,12 @@
       "location": "",
       "note": "Shared Dormitory with 4 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 4 Beds",
+      "building": "143",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-5",
@@ -263,7 +377,12 @@
       "location": "",
       "note": "Shared Dormitory with 4 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 4 Beds",
+      "building": "143",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-6",
@@ -274,7 +393,12 @@
       "location": "",
       "note": "Shared Dormitory with 4 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 4 Beds",
+      "building": "143",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-7",
@@ -285,7 +409,12 @@
       "location": "",
       "note": "Shared Dormitory with 4 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 4 Beds",
+      "building": "143",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-8",
@@ -296,7 +425,12 @@
       "location": "",
       "note": "Shared Dormitory with 4 Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 4 Beds",
+      "building": "143",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-9",
@@ -307,7 +441,12 @@
       "location": "",
       "note": "Shared Dormitory with 6 Beds w/ fridge",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 6 Beds w/ fridge",
+      "building": "143",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-204",
@@ -318,7 +457,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-204a",
@@ -329,7 +473,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141a",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-305",
@@ -340,7 +489,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-305a",
@@ -351,7 +505,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141a",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-301",
@@ -362,7 +521,12 @@
       "location": "",
       "note": "Shared Dormitory with 3 Bunk Beds w/ fridge",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 3 Bunk Beds w/ fridge",
+      "building": "141",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-301a",
@@ -373,7 +537,12 @@
       "location": "",
       "note": "Shared Dormitory with 3 Bunk Beds w/ fridge",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 3 Bunk Beds w/ fridge",
+      "building": "141a",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-302",
@@ -384,7 +553,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-302a",
@@ -395,7 +569,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141a",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-303",
@@ -406,7 +585,12 @@
       "location": "",
       "note": "Single bed",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Single bed",
+      "building": "141",
+      "beds": 1,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-304",
@@ -417,7 +601,12 @@
       "location": "",
       "note": "Shared Dormitory with 1 Bunk Bed",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 1 Bunk Bed",
+      "building": "141",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-304a",
@@ -428,7 +617,12 @@
       "location": "",
       "note": "Shared Dormitory with 1 Bunk Bed",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 1 Bunk Bed",
+      "building": "141a",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-101",
@@ -439,7 +633,12 @@
       "location": "",
       "note": "Shared Dormitory with 3 Bunk Beds w/ fridge",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 3 Bunk Beds w/ fridge",
+      "building": "141",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-101a",
@@ -450,7 +649,12 @@
       "location": "",
       "note": "Shared Dormitory with 3 Bunk Beds w/ fridge",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 3 Bunk Beds w/ fridge",
+      "building": "141a",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-102",
@@ -461,7 +665,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-102a",
@@ -472,7 +681,12 @@
       "location": "",
       "note": "Shared Dormitory with 2 Bunk Beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 2 Bunk Beds",
+      "building": "141a",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-103",
@@ -483,7 +697,12 @@
       "location": "",
       "note": "Shared Dormitory with 3 Bunk Beds w/ fridge",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 3 Bunk Beds w/ fridge",
+      "building": "141",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-104",
@@ -494,7 +713,12 @@
       "location": "",
       "note": "Shared Dormitory with 1 Bunk Bed",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 1 Bunk Bed",
+      "building": "141",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:room:room-105",
@@ -505,7 +729,12 @@
       "location": "",
       "note": "Shared Dormitory with 1 Bunk Bed",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Shared Dormitory with 1 Bunk Bed",
+      "building": "141",
+      "beds": 2,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "potts-point:bathroom:toilet-1",
@@ -516,7 +745,12 @@
       "location": "Next to Room 304A",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "potts-point:bathroom:toilet-2",
@@ -527,7 +761,12 @@
       "location": "Next to Room 204",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "potts-point:bathroom:toilet-3",
@@ -538,7 +777,12 @@
       "location": "Next to Room 204A",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "potts-point:bathroom:shower-4",
@@ -549,7 +793,12 @@
       "location": "Next to Room 102A",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "potts-point:bathroom:toilet-5",
@@ -560,7 +809,12 @@
       "location": "Next to Room 4",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "potts-point:bathroom:toilet-6",
@@ -571,7 +825,12 @@
       "location": "Next to Room 7",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-1",
@@ -582,7 +841,12 @@
       "location": "",
       "note": "6 people ensuite",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people ensuite",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-1",
@@ -591,9 +855,14 @@
       "label": "Ensuite Room 1",
       "floor": "Ground floor",
       "location": "Room 1",
-      "note": "",
+      "note": "Private bathroom inside Room 1",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-1",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-2",
@@ -604,7 +873,12 @@
       "location": "",
       "note": "4 people ensuite - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people ensuite - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-2",
@@ -613,9 +887,14 @@
       "label": "Ensuite Room 2",
       "floor": "Ground floor",
       "location": "Room 2",
-      "note": "",
+      "note": "Private bathroom inside Room 2",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-2",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-3",
@@ -626,7 +905,12 @@
       "location": "",
       "note": "8 people ensuite",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "8 people ensuite",
+      "building": "",
+      "beds": 8,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-3",
@@ -635,9 +919,14 @@
       "label": "Ensuite Room 3",
       "floor": "Ground floor",
       "location": "Room 3",
-      "note": "",
+      "note": "Private bathroom inside Room 3",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-3",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-4",
@@ -648,7 +937,12 @@
       "location": "",
       "note": "6 people shared bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-5",
@@ -659,7 +953,12 @@
       "location": "",
       "note": "6 people shared bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-6",
@@ -670,7 +969,12 @@
       "location": "",
       "note": "4 & 10 people room (2 connected rooms)",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 & 10 people room (2 connected rooms)",
+      "building": "",
+      "beds": 14,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-6",
@@ -679,9 +983,14 @@
       "label": "Ensuite Room 6",
       "floor": "Outside 1st floor",
       "location": "Room 6",
-      "note": "",
+      "note": "Private bathroom inside Room 6",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-6",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-7",
@@ -692,7 +1001,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-8",
@@ -703,7 +1017,12 @@
       "location": "",
       "note": "4 people shared bathroom - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared bathroom - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-9",
@@ -714,7 +1033,12 @@
       "location": "",
       "note": "4 people shared bathroom - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared bathroom - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-10",
@@ -725,7 +1049,12 @@
       "location": "",
       "note": "4 people shared bathroom - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared bathroom - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-11",
@@ -736,7 +1065,12 @@
       "location": "",
       "note": "4 people shared bathroom - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared bathroom - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-12",
@@ -747,7 +1081,12 @@
       "location": "",
       "note": "4 people shared bathroom - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared bathroom - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-13",
@@ -758,7 +1097,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-14",
@@ -769,7 +1113,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-15",
@@ -780,7 +1129,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-15",
@@ -789,9 +1143,14 @@
       "label": "Ensuite Room 15",
       "floor": "1st floor",
       "location": "Room 15",
-      "note": "",
+      "note": "Private bathroom inside Room 15",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-15",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-16",
@@ -802,7 +1161,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-17",
@@ -813,7 +1177,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-18",
@@ -824,7 +1193,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-19",
@@ -835,7 +1209,12 @@
       "location": "",
       "note": "14 people ensuite",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "14 people ensuite",
+      "building": "",
+      "beds": 14,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-19",
@@ -844,9 +1223,14 @@
       "label": "Ensuite Room 19",
       "floor": "Outside 2nd floor",
       "location": "Room 19",
-      "note": "",
+      "note": "Private bathroom inside Room 19",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-19",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-20",
@@ -857,7 +1241,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:ensuite-room-20",
@@ -866,9 +1255,14 @@
       "label": "Ensuite Room 20",
       "floor": "2nd floor",
       "location": "Room 20",
-      "note": "",
+      "note": "Private bathroom inside Room 20",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "allen:room:room-20",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:room:room-21",
@@ -879,7 +1273,12 @@
       "location": "",
       "note": "8 people shared bathroom - 4 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "8 people shared bathroom - 4 bunk beds",
+      "building": "",
+      "beds": 8,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-22",
@@ -890,7 +1289,12 @@
       "location": "",
       "note": "4 people shared bathroom - 2 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "4 people shared bathroom - 2 bunk beds",
+      "building": "",
+      "beds": 4,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-23",
@@ -901,7 +1305,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-24",
@@ -912,7 +1321,12 @@
       "location": "",
       "note": "8 people shared bathroom - 4 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "8 people shared bathroom - 4 bunk beds",
+      "building": "",
+      "beds": 8,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-25",
@@ -923,7 +1337,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-26",
@@ -934,7 +1353,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-27",
@@ -945,7 +1369,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:room:room-28",
@@ -956,7 +1385,12 @@
       "location": "",
       "note": "6 people shared bathroom - 3 bunk beds",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "6 people shared bathroom - 3 bunk beds",
+      "building": "",
+      "beds": 6,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "allen:bathroom:toilet-1",
@@ -967,7 +1401,12 @@
       "location": "Next to Room 2",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-2",
@@ -978,7 +1417,12 @@
       "location": "In front of Room 3",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-3",
@@ -989,7 +1433,12 @@
       "location": "Next to Room 5",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:shower-4",
@@ -1000,7 +1449,12 @@
       "location": "Next to Room 5",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:bathroom-5",
@@ -1009,9 +1463,14 @@
       "label": "Bathroom 5",
       "floor": "1st floor",
       "location": "In front of Room 14",
-      "note": "",
+      "note": "Shower and toilet",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:bathroom-6",
@@ -1020,9 +1479,14 @@
       "label": "Bathroom 6",
       "floor": "1st floor",
       "location": "In front of Room 14",
-      "note": "",
+      "note": "Shower and toilet",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-7",
@@ -1033,7 +1497,12 @@
       "location": "In front of Room 14",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:bathroom-8",
@@ -1042,9 +1511,14 @@
       "label": "Bathroom 8",
       "floor": "1st floor",
       "location": "In front of Room 9",
-      "note": "",
+      "note": "Shower and toilet",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-9",
@@ -1055,7 +1529,12 @@
       "location": "Next to Room 16",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-11",
@@ -1066,7 +1545,12 @@
       "location": "Next to Room 18",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:shower-12",
@@ -1077,7 +1561,12 @@
       "location": "Next to Room 19",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:bathroom-13",
@@ -1086,9 +1575,14 @@
       "label": "Bathroom 13",
       "floor": "2nd floor",
       "location": "In front of Room 27",
-      "note": "",
+      "note": "Shower and toilet",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:bathroom-14",
@@ -1097,9 +1591,14 @@
       "label": "Bathroom 14",
       "floor": "2nd floor",
       "location": "In front of Room 27",
-      "note": "",
+      "note": "Shower and toilet",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-15",
@@ -1110,7 +1609,12 @@
       "location": "In front of Room 26",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:bathroom-16",
@@ -1119,9 +1623,14 @@
       "label": "Bathroom 16",
       "floor": "2nd floor",
       "location": "In front of Room 23",
-      "note": "",
+      "note": "Shower and toilet",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:toilet-17",
@@ -1132,7 +1641,12 @@
       "location": "Next to Room 20",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "allen:bathroom:shower-18",
@@ -1143,7 +1657,12 @@
       "location": "Next to Room 28",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "shared",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-1",
@@ -1154,7 +1673,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-1",
@@ -1163,9 +1687,14 @@
       "label": "Ensuite Room 1",
       "floor": "1st level",
       "location": "Room 1",
-      "note": "",
+      "note": "Private bathroom inside Room 1",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-1",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-2",
@@ -1174,9 +1703,14 @@
       "label": "Room 2",
       "floor": "1st level",
       "location": "",
-      "note": "Private Room with Shared Bathroom",
+      "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-3",
@@ -1187,7 +1721,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-3",
@@ -1196,9 +1735,14 @@
       "label": "Ensuite Room 3",
       "floor": "1st level",
       "location": "Room 3",
-      "note": "",
+      "note": "Private bathroom inside Room 3",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-3",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-4",
@@ -1209,7 +1753,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-4",
@@ -1218,9 +1767,14 @@
       "label": "Ensuite Room 4",
       "floor": "1st level",
       "location": "Room 4",
-      "note": "",
+      "note": "Private bathroom inside Room 4",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-4",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-5",
@@ -1231,7 +1785,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-5",
@@ -1240,9 +1799,14 @@
       "label": "Ensuite Room 5",
       "floor": "1st level",
       "location": "Room 5",
-      "note": "",
+      "note": "Private bathroom inside Room 5",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-5",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-6",
@@ -1251,9 +1815,14 @@
       "label": "Room 6",
       "floor": "1st level",
       "location": "",
-      "note": "Private Room with Shared Bathroom",
+      "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-7",
@@ -1264,7 +1833,12 @@
       "location": "",
       "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-8",
@@ -1275,7 +1849,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-8",
@@ -1284,9 +1863,14 @@
       "label": "Ensuite Room 8",
       "floor": "1st level",
       "location": "Room 8",
-      "note": "",
+      "note": "Private bathroom inside Room 8",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-8",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-9",
@@ -1297,7 +1881,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-9",
@@ -1306,9 +1895,14 @@
       "label": "Ensuite Room 9",
       "floor": "1st level",
       "location": "Room 9",
-      "note": "",
+      "note": "Private bathroom inside Room 9",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-9",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-10",
@@ -1319,7 +1913,12 @@
       "location": "",
       "note": "Private Room with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-10",
@@ -1328,9 +1927,14 @@
       "label": "Ensuite Room 10",
       "floor": "1st level",
       "location": "Room 10",
-      "note": "",
+      "note": "Private bathroom inside Room 10",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-10",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-11",
@@ -1341,7 +1945,12 @@
       "location": "",
       "note": "Private Room with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-11",
@@ -1350,9 +1959,14 @@
       "label": "Ensuite Room 11",
       "floor": "1st level",
       "location": "Room 11",
-      "note": "",
+      "note": "Private bathroom inside Room 11",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-11",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-12",
@@ -1363,7 +1977,12 @@
       "location": "",
       "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-13",
@@ -1374,7 +1993,12 @@
       "location": "",
       "note": "Private Room with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-13",
@@ -1383,9 +2007,14 @@
       "label": "Ensuite Room 13",
       "floor": "1st level",
       "location": "Room 13",
-      "note": "",
+      "note": "Private bathroom inside Room 13",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-13",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-14",
@@ -1396,7 +2025,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-14",
@@ -1405,9 +2039,14 @@
       "label": "Ensuite Room 14",
       "floor": "1st level",
       "location": "Room 14",
-      "note": "",
+      "note": "Private bathroom inside Room 14",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-14",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-15",
@@ -1418,7 +2057,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-15",
@@ -1427,9 +2071,14 @@
       "label": "Ensuite Room 15",
       "floor": "2nd level",
       "location": "Room 15",
-      "note": "",
+      "note": "Private bathroom inside Room 15",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-15",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-16",
@@ -1440,7 +2089,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-16",
@@ -1449,9 +2103,14 @@
       "label": "Ensuite Room 16",
       "floor": "2nd level",
       "location": "Room 16",
-      "note": "",
+      "note": "Private bathroom inside Room 16",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-16",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-17",
@@ -1460,9 +2119,14 @@
       "label": "Room 17",
       "floor": "2nd level",
       "location": "",
-      "note": "Private Room with Shared Bathroom",
+      "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-18",
@@ -1471,9 +2135,14 @@
       "label": "Room 18",
       "floor": "2nd level",
       "location": "",
-      "note": "Private Room with Shared Bathroom",
+      "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-19",
@@ -1484,7 +2153,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-19",
@@ -1493,9 +2167,14 @@
       "label": "Ensuite Room 19",
       "floor": "2nd level",
       "location": "Room 19",
-      "note": "",
+      "note": "Private bathroom inside Room 19",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-19",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-20",
@@ -1506,7 +2185,12 @@
       "location": "",
       "note": "Owner Occupied",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Owner Occupied",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-21",
@@ -1517,7 +2201,12 @@
       "location": "",
       "note": "Private Room with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-21",
@@ -1526,9 +2215,14 @@
       "label": "Ensuite Room 21",
       "floor": "2nd level",
       "location": "Room 21",
-      "note": "",
+      "note": "Private bathroom inside Room 21",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-21",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-22",
@@ -1539,7 +2233,12 @@
       "location": "",
       "note": "Owner Occupied",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Owner Occupied",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-23",
@@ -1550,7 +2249,12 @@
       "location": "",
       "note": "Owner Occupied",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Owner Occupied",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-24",
@@ -1559,9 +2263,14 @@
       "label": "Room 24",
       "floor": "2nd level",
       "location": "",
-      "note": "Private Room with Shared Bathroom",
+      "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-25",
@@ -1572,7 +2281,12 @@
       "location": "",
       "note": "Owner Occupied",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Owner Occupied",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-26",
@@ -1581,9 +2295,14 @@
       "label": "Room 26",
       "floor": "2nd level",
       "location": "",
-      "note": "Private Room with Shared Bathroom",
+      "note": "Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:room:room-27",
@@ -1594,7 +2313,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-27",
@@ -1603,9 +2327,14 @@
       "label": "Ensuite Room 27",
       "floor": "2nd level",
       "location": "Room 27",
-      "note": "",
+      "note": "Private bathroom inside Room 27",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-27",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-28",
@@ -1616,7 +2345,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-28",
@@ -1625,9 +2359,14 @@
       "label": "Ensuite Room 28",
       "floor": "2nd level",
       "location": "Room 28",
-      "note": "",
+      "note": "Private bathroom inside Room 28",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-28",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-29",
@@ -1638,7 +2377,12 @@
       "location": "",
       "note": "Private Studio with Ensuite Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "Private Studio with Ensuite Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:ensuite-room-29",
@@ -1647,9 +2391,14 @@
       "label": "Ensuite Room 29",
       "floor": "2nd level",
       "location": "Room 29",
-      "note": "",
+      "note": "Private bathroom inside Room 29",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-29",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:room:room-30",
@@ -1658,9 +2407,14 @@
       "label": "Room 30",
       "floor": "2nd level",
       "location": "",
-      "note": "KR + Private Room with Shared Bathroom",
+      "note": "KR + Private Room with Detached Private Bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_type": "KR + Private Room with Detached Private Bathroom",
+      "building": "",
+      "beds": null,
+      "room_id": null,
+      "bathroom_type": null
     },
     {
       "id": "olympic:bathroom:bathroom-a1",
@@ -1668,10 +2422,15 @@
       "kind": "bathroom",
       "label": "Bathroom A1",
       "floor": "1st floor",
-      "location": "",
+      "location": "Room 26",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-26",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-b1",
@@ -1679,10 +2438,15 @@
       "kind": "bathroom",
       "label": "Bathroom B1",
       "floor": "1st floor",
-      "location": "",
+      "location": "Room 6",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-6",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-c1",
@@ -1690,10 +2454,15 @@
       "kind": "bathroom",
       "label": "Bathroom C1",
       "floor": "1st floor",
-      "location": "",
+      "location": "Room 7",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-7",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-d1",
@@ -1701,10 +2470,15 @@
       "kind": "bathroom",
       "label": "Bathroom D1",
       "floor": "1st floor",
-      "location": "",
+      "location": "Room 2",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-2",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-e1",
@@ -1712,10 +2486,15 @@
       "kind": "bathroom",
       "label": "Bathroom E1",
       "floor": "1st floor",
-      "location": "",
+      "location": "Room 12",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-12",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-f1",
@@ -1724,9 +2503,14 @@
       "label": "Bathroom F1",
       "floor": "1st floor",
       "location": "",
-      "note": "",
+      "note": "Unassigned detached bathroom",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": null,
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-a2",
@@ -1734,10 +2518,15 @@
       "kind": "bathroom",
       "label": "Bathroom A2",
       "floor": "2nd floor",
-      "location": "",
+      "location": "Room 30",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-30",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-b2",
@@ -1745,10 +2534,15 @@
       "kind": "bathroom",
       "label": "Bathroom B2",
       "floor": "2nd floor",
-      "location": "",
+      "location": "Room 17",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-17",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-c2",
@@ -1756,10 +2550,15 @@
       "kind": "bathroom",
       "label": "Bathroom C2",
       "floor": "2nd floor",
-      "location": "",
+      "location": "Room 18",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-18",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-d2",
@@ -1767,10 +2566,15 @@
       "kind": "bathroom",
       "label": "Bathroom D2",
       "floor": "2nd floor",
-      "location": "",
+      "location": "Room 23",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-23",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
     },
     {
       "id": "olympic:bathroom:bathroom-e2",
@@ -1778,10 +2582,166 @@
       "kind": "bathroom",
       "label": "Bathroom E2",
       "floor": "2nd floor",
-      "location": "",
+      "location": "Room 24",
       "note": "",
       "status": "unconfirmed",
-      "source": "https://dashboard.azzurrohotels.com/#property-info"
+      "source": "https://dashboard.azzurrohotels.com/#property-info",
+      "room_id": "olympic:room:room-24",
+      "bathroom_type": "detached",
+      "building": "",
+      "beds": null,
+      "room_type": ""
+    },
+    {
+      "id": "olympic:bathroom:ensuite-room-20",
+      "property": "Olympic",
+      "kind": "bathroom",
+      "label": "Ensuite Room 20",
+      "floor": "2nd level",
+      "location": "Room 20",
+      "note": "Ensuite shown on second-floor plan; room is listed as owner occupied.",
+      "status": "unconfirmed",
+      "source": "https://dashboard.azzurrohotels.com/img/property-info/olympic-hotel-floor-2.png",
+      "room_id": "olympic:room:room-20",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
+    },
+    {
+      "id": "olympic:bathroom:ensuite-room-22",
+      "property": "Olympic",
+      "kind": "bathroom",
+      "label": "Ensuite Room 22",
+      "floor": "2nd level",
+      "location": "Room 22",
+      "note": "Ensuite shown on second-floor plan; room is listed as owner occupied.",
+      "status": "unconfirmed",
+      "source": "https://dashboard.azzurrohotels.com/img/property-info/olympic-hotel-floor-2.png",
+      "room_id": "olympic:room:room-22",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
+    },
+    {
+      "id": "olympic:bathroom:ensuite-room-25",
+      "property": "Olympic",
+      "kind": "bathroom",
+      "label": "Ensuite Room 25",
+      "floor": "2nd level",
+      "location": "Room 25",
+      "note": "Ensuite shown on second-floor plan; room is listed as owner occupied.",
+      "status": "unconfirmed",
+      "source": "https://dashboard.azzurrohotels.com/img/property-info/olympic-hotel-floor-2.png",
+      "room_id": "olympic:room:room-25",
+      "bathroom_type": "ensuite",
+      "building": "",
+      "beds": null,
+      "room_type": ""
+    }
+  ],
+  "properties": [
+    {
+      "name": "Central",
+      "displayName": "Central",
+      "address": "90 Wentworth Avenue, Surry Hills, NSW 2010",
+      "station": "Central Station & Museum Station",
+      "sourceSummary": "48 beds / 12 rooms\n6 bathrooms total \u2014 3 private (in-room) + 3 shared",
+      "amenities": {
+        "Total": "48 beds / 12 rooms\n6 bathrooms total \u2014 3 private (in-room) + 3 shared",
+        "Kitchen": "Kitchenware (knives, pots, pans), utensils (spoon, fork, knife), plates & mugs, electric kettle, toaster, cookpad / hotplates, microwave, refrigerator",
+        "Rooms": "Beddings provided (sheets, blanket, pillow), bedside lights, bedside plugs, under-bed luggage space, lockers for valuables, air conditioners (heating & cooling)",
+        "Dining Room": "Tables, chairs",
+        "Laundry": "Machine available on the 1st floor \u2014 $4 per wash & $4 per dry. Mastercard or Visa.",
+        "Parking": "Not provided by the property. On-street parking available on Foster St, Hunt St and Campbell St (watch the signs)."
+      },
+      "plans": [
+        {
+          "caption": "1st floor \u2014 Bathrooms 1 \u00b7 2 \u00b7 3 (near dining area)",
+          "url": "property-plans/central-sydney-floor-1.png"
+        },
+        {
+          "caption": "2nd floor \u2014 Bathroom 4 (next to Room 207)",
+          "url": "property-plans/central-sydney-floor-2.png"
+        }
+      ]
+    },
+    {
+      "name": "Potts Point",
+      "displayName": "Potts Point",
+      "address": "141 Victoria Street, Potts Point, NSW 2011",
+      "station": "Kings Cross Station",
+      "sourceSummary": "107 beds / 27 rooms\n5 bathrooms, 2 showers, 2 toilets",
+      "amenities": {
+        "Total": "107 beds / 27 rooms\n5 bathrooms, 2 showers, 2 toilets",
+        "Kitchen": "Kitchenware (knives, pots, pans), utensils (spoon, fork, knife), plates & mugs, electric kettle, toaster, cookpad / hotplates, microwave, refrigerator",
+        "Rooms": "Beddings provided (sheets, blanket, pillow), bedside lights, bedside plugs, under-bed luggage space, lockers for valuables, air conditioners (heating & cooling)",
+        "Dining Room": "Tables, chairs",
+        "Laundry": "Machine on the ground floor \u2014 $4 per wash & $4 per dry. Card only (Visa & Mastercard).",
+        "Parking": "Not provided by the property. On-street parking available on Victoria St or Earl St (watch the signs)."
+      },
+      "plans": [
+        {
+          "caption": "141 Building (1st floor \u00b7 Ground floor \u00b7 Basement) + 143 Building",
+          "url": "property-plans/potts-point-floor-1.png"
+        }
+      ]
+    },
+    {
+      "name": "Allen",
+      "displayName": "Allen (Darling Harbour)",
+      "address": "22 Allen Street, Pyrmont, NSW 2009",
+      "station": "Convention Station (Light Rail) \u2014 5 min walk \u00b7 Pyrmont Bay Station (Light Rail) \u2014 8 min walk",
+      "sourceSummary": "176 beds / 28 rooms\n24 bathrooms total \u2014 7 private (in-room) + 6 bathrooms + 8 toilets + 3 showers",
+      "amenities": {
+        "Total": "176 beds / 28 rooms\n24 bathrooms total \u2014 7 private (in-room) + 6 bathrooms + 8 toilets + 3 showers",
+        "Kitchen": "Kitchenware (knives, pots, pans), utensils (spoon, fork, knife), plates & mugs, electric kettle, toaster, cookpad / hotplates, microwave, refrigerator",
+        "Rooms": "Beddings provided (sheets, blanket, pillow), bedside lights, bedside plugs, under-bed luggage space, lockers for valuables, air conditioners (heating & cooling)",
+        "Dining Room": "Tables, chairs",
+        "Laundry": "Machines on the ground floor & 1st floor \u2014 $4 per wash & $4 per dry. Card only (Visa & Mastercard).",
+        "Parking": "Not provided by the property. On-street parking on Harris St & Pyrmont St (watch the signs). Paid parking at Secure Parking, 320 Harris St, Pyrmont NSW 2009."
+      },
+      "plans": [
+        {
+          "caption": "Ground floor (reception, dining, rooms 1\u20133)",
+          "url": "property-plans/darling-harbour-floor-1.png"
+        },
+        {
+          "caption": "1st floor (rooms 4\u201316)",
+          "url": "property-plans/darling-harbour-floor-2.png"
+        },
+        {
+          "caption": "2nd floor (rooms 17\u201328)",
+          "url": "property-plans/darling-harbour-floor-3.png"
+        }
+      ]
+    },
+    {
+      "name": "Olympic",
+      "displayName": "Olympic",
+      "address": "308 Moore Park, Paddington, NSW 2021",
+      "station": "Moore Park Light Rail Station (L2/L3 lines) & Allianz Stadium",
+      "sourceSummary": "30 rooms",
+      "amenities": {
+        "Total": "30 rooms",
+        "Kitchen": "1st floor \u2014 Kitchen 1 & Kitchen 2\n2nd floor \u2014 Kitchen 3",
+        "Rooms": "Beddings provided (sheets, blanket, pillow), bedside lights, bedside plugs, under-bed luggage space, some rooms have wardrobes, microwave, refrigerator",
+        "Bathrooms": "1st floor \u2014 5 common + 10 ensuite\n2nd floor \u2014 5 common + 10 ensuite",
+        "Dining Room": "None",
+        "Laundry": "On the 2nd level \u2014 2 washers, 1 dryer. Coin operated ($4 per wash & dry).",
+        "Parking": "On-street parking available."
+      },
+      "plans": [
+        {
+          "caption": "First floor (rooms 1\u201314)",
+          "url": "property-plans/olympic-hotel-floor-1.png"
+        },
+        {
+          "caption": "Second floor (rooms 15\u201330)",
+          "url": "property-plans/olympic-hotel-floor-2.png"
+        }
+      ]
     }
   ]
 }
