@@ -309,6 +309,17 @@ function taskCopyText(tasks, title) {
   }
   return copyDocument(title, lines);
 }
+function exportTasks() {
+  const tasks = filteredTasks();
+  if (!tasks.length) { toast('No tasks to export in this view.'); return; }
+  const title = view === 'maintenance' ? 'Onsite Maintenance' : 'Operations';
+  const blob = new Blob(['\ufeff' + taskCopyText(tasks, title)], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob), link = document.createElement('a');
+  const name = selected === 'all' ? 'everyone' : member(selected)?.name || 'unassigned';
+  link.href = url; link.download = `tasks-${name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/\s+/g, '-')}-${today()}.txt`;
+  document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Tasks exported by name');
+}
 function memberCopyText() {
   if (!state.members.length) return '';
   const lines = [`Team members: ${state.members.length}`, ''];
@@ -330,11 +341,14 @@ function sortTasks(a, b) { return String(a.due || '9999').localeCompare(String(b
 function board() {
   if (!['all', 'unassigned'].includes(selected) && !member(selected)) selected = 'all';
   const filters = [['all', 'Everyone'], ['unassigned', 'Unassigned'], ...state.members.map(person => [person.id, person.name])];
+  const exportButton = '<button class="secondary" id="export-tasks">↓ Export text</button>';
   $('#body').innerHTML = `<div class="tabs" role="group" aria-label="Filter by assignee">${filters.map(([id, name]) => `<button data-filter="${esc(id)}" class="${selected === id ? 'selected' : ''}" aria-pressed="${selected === id}" title="${esc(name)}">${esc(name)}</button>`).join('')}</div><div class="board-toolbar"><div class="view-switch" role="group" aria-label="Task view"><button data-layout="kanban" aria-pressed="${taskView === 'kanban'}" class="${taskView === 'kanban' ? 'selected' : ''}">▥ Kanban</button><button data-layout="list" aria-pressed="${taskView === 'list'}" class="${taskView === 'list' ? 'selected' : ''}">☰ List</button></div><select id="scope" class="toolbar-scope" aria-label="Task scope">${[['active', 'Active tasks'], ['all', 'All tasks'], ['completed', 'Completed'], ['overdue', 'Overdue']].map(([value, label]) => `<option value="${value}" ${scope === value ? 'selected' : ''}>${label}</option>`).join('')}</select><div class="search-wrap"><label class="sr-only" for="search">Search tasks, notes, people</label><input id="search" type="search" placeholder="Search tasks, notes, people…" value="${esc(query)}"></div></div><div id="columns"></div><p class="note">${!isAdmin() ? 'Select a task title or Notes to view details and update history.' : taskView === 'kanban' ? 'Click a card or its Edit button to open a task. Drag between columns or use the status menu to move it.' : 'Change status directly in the table. Select a title to edit, or Notes to add an update.'} Completed work is available in the All tasks and Completed filters.</p>`;
+  $('#scope').insertAdjacentHTML('afterend', exportButton);
   document.querySelectorAll('[data-filter]').forEach(button => { button.onclick = () => { selected = button.dataset.filter; scope = selected === 'all' ? 'active' : 'all'; render(); $(`[data-filter="${CSS.escape(selected)}"]`)?.focus(); }; });
   document.querySelectorAll('[data-layout]').forEach(button => { button.onclick = () => { taskView = button.dataset.layout; storage.set('localStorage', 'forma-task-view', taskView); render(); $(`[data-layout="${taskView}"]`)?.focus(); }; });
   $('#scope').onchange = event => { scope = event.target.value; columns(); };
   $('#search').oninput = event => { query = event.target.value; columns(); };
+  $('#export-tasks').onclick = exportTasks;
   columns();
 }
 function statusPicker(task) {

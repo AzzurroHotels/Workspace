@@ -57,6 +57,10 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     await page.waitForFunction(() => window.__copiedText?.includes('Test payment confirmation emails'));
     const exported = await page.evaluate(() => window.__copiedText);
     assert.match(exported, /View: all tasks/); assert.doesNotMatch(exported, /Inspect common-area lighting/);
+    const downloadPromise = page.waitForEvent('download'); await page.locator('#export-tasks').click();
+    const download = await downloadPromise, exportPath = await download.path();
+    const downloadedText = fs.readFileSync(exportPath, 'utf8');
+    assert.match(downloadedText, /Test payment confirmation emails/); assert.doesNotMatch(downloadedText, /Inspect common-area lighting/);
     await page.locator('#search').fill('');
     check('Completed unassigned work, note search, and filtered task copy');
 
@@ -170,6 +174,7 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     await empty.locator('[data-view="members"]').click(); assert.equal(await empty.locator('#first-member').count(), 1);
     await empty.locator('[data-view="board"]').click(); await empty.locator('#search').fill('no results'); await empty.locator('#copy-view').click();
     assert.match(await empty.locator('#toast').innerText(), /nothing in this view/);
+    await empty.locator('#export-tasks').click(); assert.match(await empty.locator('#toast').innerText(), /No tasks to export/);
     assert.equal(await empty.locator('#change-name,#welcome-form,#visitor-name').count(), 0);
     await empty.setViewportSize({width:320,height:800});
     assert.equal(await empty.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
