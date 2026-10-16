@@ -46,7 +46,7 @@ function loadCache() {
 }
 let state = demoMode ? loadCache() : emptyState();
 let baseline = structuredClone(state), busy = false, ready = demoMode, stale = false;
-let view = ['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard';
+let view = ['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users', 'availability'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard';
 let selected = 'all', scope = 'active', query = '', month = new Date(today() + 'T12:00:00');
 const boardFilters = new Map();
 let lastBoardView = view === 'maintenance' ? 'maintenance' : 'board';
@@ -140,7 +140,7 @@ async function refresh(force = false) {
 }
 
 function navigate(next) {
-  if (!['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(next) || busy) return;
+  if (!['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users', 'availability'].includes(next) || busy) return;
   restoreBoardFilters(next);
   view = next === 'users' && !canManageUsers() ? 'dashboard' : next;
   if (location.hash !== '#' + next) history.pushState(null, '', '#' + next);
@@ -164,17 +164,17 @@ function render() {
     button.classList.toggle('active', button.dataset.view === view);
     if (button.dataset.view === view) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
   });
-  const titles = { trackers: ['Trackers', 'Your everyday essentials.', 'Shared sheets, documents, and links. All within reach.'], users: ['Users', 'Workspace access.', 'Manage the people who can sign in to your workspace.'], dashboard: ['Dashboard', 'Your day, in focus.', 'A clear view of your team’s progress and what’s coming next.'], board: ['Operations', 'Keep the day moving.', 'Every task, every update, all in one place.'], maintenance: ['Onsite Maintenance', 'A place for every fix.', 'Repairs, inspections, and onsite work, from request to completion.'], recurring: ['Recurring tasks', 'A rhythm for every day.', 'Daily routines and weekly responsibilities, in time order.'], purchases: ['Purchase List', 'Everything the team needs.', 'Plan your purchases and keep a record of what’s been bought.'], members: ['Team members', 'The people behind the work.', 'Keep your team connected and their responsibilities clear.'] };
+  const titles = { availability: ['Rooms & bathrooms', 'Bring every space back into use.', 'Closure dates, actions, responsible people and reopening history across four properties.'], trackers: ['Trackers', 'Your everyday essentials.', 'Shared sheets, documents, and links. All within reach.'], users: ['Users', 'Workspace access.', 'Manage the people who can sign in to your workspace.'], dashboard: ['Dashboard', 'Your day, in focus.', 'A clear view of your team’s progress and what’s coming next.'], board: ['Operations', 'Keep the day moving.', 'Every task, every update, all in one place.'], maintenance: ['Onsite Maintenance', 'A place for every fix.', 'Repairs, inspections, and onsite work, from request to completion.'], recurring: ['Recurring tasks', 'A rhythm for every day.', 'Daily routines and weekly responsibilities, in time order.'], purchases: ['Purchase List', 'Everything the team needs.', 'Plan your purchases and keep a record of what’s been bought.'], members: ['Team members', 'The people behind the work.', 'Keep your team connected and their responsibilities clear.'] };
   $('#breadcrumb').textContent = titles[view][0];
   connection(stale ? 'Refresh required before editing' : undefined, stale ? 'error' : undefined);
   if (!ready) { $('#content').innerHTML = '<div class="connection-panel" role="status"><p class="eyebrow">AZZURRO WORKSPACE</p><h1>Connecting your team…</h1><p>Loading tasks, members, and recent updates.</p></div>'; return; }
-  const copyNames = { dashboard: 'dashboard', recurring: 'routines', board: 'tasks', maintenance: 'maintenance', trackers: 'trackers', purchases: 'purchase list', members: 'team', users: 'users' };
-  const addAction = isAdmin() ? view === 'users' ? '<div class="user-add-actions" role="group" aria-label="Choose account role"><button class="primary" id="add-admin-user">＋ Add admin</button><button class="secondary" id="add-viewer-user">＋ Add viewer</button></div>' : `<button class="primary" id="${view === 'recurring' ? 'add-recurring' : view === 'purchases' ? 'add-purchase' : view === 'trackers' ? 'add-tracker' : view === 'members' ? 'add-member' : 'add-task'}">＋ ${view === 'recurring' ? 'Add recurring task' : view === 'purchases' ? 'Add item' : view === 'trackers' ? 'Add tracker' : view === 'members' ? 'Add member' : 'New task'}</button>` : '<span class="access-role viewer">Read-only access</span>';
+  const copyNames = { availability: 'room register', dashboard: 'dashboard', recurring: 'routines', board: 'tasks', maintenance: 'maintenance', trackers: 'trackers', purchases: 'purchase list', members: 'team', users: 'users' };
+  const addAction = view === 'availability' ? '' : isAdmin() ? view === 'users' ? '<div class="user-add-actions" role="group" aria-label="Choose account role"><button class="primary" id="add-admin-user">＋ Add admin</button><button class="secondary" id="add-viewer-user">＋ Add viewer</button></div>' : `<button class="primary" id="${view === 'recurring' ? 'add-recurring' : view === 'purchases' ? 'add-purchase' : view === 'trackers' ? 'add-tracker' : view === 'members' ? 'add-member' : 'add-task'}">＋ ${view === 'recurring' ? 'Add recurring task' : view === 'purchases' ? 'Add item' : view === 'trackers' ? 'Add tracker' : view === 'members' ? 'Add member' : 'New task'}</button>` : '<span class="access-role viewer">Read-only access</span>';
   $('#content').innerHTML = `${demoMode ? '<div class="preview-banner"><b>Design preview</b><span>Sample data only · Changes here stay in this browser.</span></div>' : ''}${stale ? '<div class="overdue-banner" role="alert"><span>Reconnect to see the latest changes and continue editing.</span><button class="secondary" id="reconnect">Reconnect</button></div>' : ''}<div class="heading ${view === 'users' ? 'users-heading' : ''}"><div><p class="eyebrow">${titles[view][0]}</p><h1>${titles[view][1]}</h1><p class="subtitle">${titles[view][2]}</p></div><div class="heading-actions"><button class="secondary copy-view" id="copy-view">${icon('copy')}<span>Copy ${copyNames[view]}</span></button>${addAction}</div></div><div id="body"></div>`;
   $('#copy-view').onclick = copyCurrentView;
   if (view === 'users') $('#copy-view').disabled = true;
   $('#reconnect')?.addEventListener('click', () => refresh(true));
-  if (view === 'dashboard') dashboard(); else if (['board', 'maintenance'].includes(view)) board(); else if (view === 'recurring') recurring(); else if (view === 'purchases') purchases(); else if (view === 'users') users(); else if (view === 'trackers') trackers(); else members();
+  if (view === 'availability') availability(); else if (view === 'dashboard') dashboard(); else if (['board', 'maintenance'].includes(view)) board(); else if (view === 'recurring') recurring(); else if (view === 'purchases') purchases(); else if (view === 'users') users(); else if (view === 'trackers') trackers(); else members();
   $('#add-recurring')?.addEventListener('click', () => recurringEditor());
   $('#add-purchase')?.addEventListener('click', () => purchaseEditor());
   $('#add-tracker')?.addEventListener('click', () => trackerEditor());
@@ -214,6 +214,7 @@ async function writeClipboard(text) {
 }
 async function copyCurrentView() {
   const serializers = {
+    availability: availabilityCopyText,
     dashboard: dashboardCopyText,
     recurring: recurringCopyText,
     board: () => taskCopyText(filteredTasks(), 'Operations'),
@@ -223,7 +224,7 @@ async function copyCurrentView() {
     members: memberCopyText,
     users: userCopyText
   };
-  const names = { dashboard: 'Dashboard', recurring: 'Recurring tasks', board: 'Operations tasks', maintenance: 'Maintenance tasks', trackers: 'Trackers', purchases: 'Purchase list', members: 'Team members', users: 'Users' };
+  const names = { availability: 'Room register', dashboard: 'Dashboard', recurring: 'Recurring tasks', board: 'Operations tasks', maintenance: 'Maintenance tasks', trackers: 'Trackers', purchases: 'Purchase list', members: 'Team members', users: 'Users' };
   try {
     const text = serializers[view]();
     if (!text) { toast('There is nothing in this view to copy.'); return; }
@@ -544,7 +545,7 @@ function recordLocalChanges(before, after) {
   after.activity = [...entries.reverse(), ...(before.activity || [])];
 }
 document.querySelectorAll('nav button').forEach(button => { button.onclick = () => navigate(button.dataset.view); });
-window.addEventListener('hashchange', () => { const next = location.hash.slice(1); if (['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(next)) { view = next; render(); } });
+window.addEventListener('hashchange', () => { const next = location.hash.slice(1); if (['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users', 'availability'].includes(next)) { view = next; render(); } });
 $('#editor').addEventListener('cancel', event => { if (busy) event.preventDefault(); });
 $('#editor').addEventListener('close', () => { if (dialogReturnFocus?.isConnected) dialogReturnFocus.focus({ preventScroll: true }); else $('#content').focus({ preventScroll: true }); });
 document.addEventListener('keydown', event => {
