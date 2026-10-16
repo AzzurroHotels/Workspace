@@ -8,8 +8,8 @@ const shared = !process.argv.includes('--demo');
 const demo = process.argv.includes('--demo');
 if (process.argv.includes('--shared') && demo) throw new Error('Choose demo or shared mode, not both.');
 const sample = demo ? createRequire(import.meta.url)(process.env.WORKFLOW_PREVIEW === 'true' ? '../tests/workflow-fixtures.cjs' : '../tests/fixtures.cjs')() : null;
-const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
-const files = new Set(['index.html', 'style.css', 'app.js', 'auth.js', 'access-ui.js', 'ui.js', 'trackers.js', 'schedules.js', 'workflows.js', ...['barlow-condensed-latin-600-normal.woff2','barlow-condensed-latin-700-normal.woff2','dm-sans-latin-400-normal.woff2','dm-sans-latin-500-normal.woff2','dm-sans-latin-600-normal.woff2','dm-sans-latin-700-normal.woff2'].map(name => 'vendor/fonts/' + name), 'vendor/supabase.js', 'store.js', 'config.js', 'favicon.svg']);
+const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+const files = new Set(['index.html', 'style.css', 'app.js', 'auth.js', 'access-ui.js', 'ui.js', 'trackers.js', 'schedules.js', 'workflows.js', 'availability.js', 'availability-model.js', 'availability-inventory.json', ...['barlow-condensed-latin-600-normal.woff2','barlow-condensed-latin-700-normal.woff2','dm-sans-latin-400-normal.woff2','dm-sans-latin-500-normal.woff2','dm-sans-latin-600-normal.woff2','dm-sans-latin-700-normal.woff2'].map(name => 'vendor/fonts/' + name), 'vendor/supabase.js', 'store.js', 'config.js', 'favicon.svg']);
 const server = http.createServer(async (req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname.slice(1) || 'index.html';
   if (!['GET', 'HEAD'].includes(req.method) || !files.has(name)) {

@@ -16,6 +16,14 @@ npm run demo
 
 Open http://127.0.0.1:4175/#recurring. This preview uses fictional records and browser storage only. Preview edits are not transferred to production. For automated browser tests use the default demo fixture without WORKFLOW_PREVIEW.
 
+## Rooms and bathrooms register (16 October 2026)
+
+`#availability` adds an inventory and append-only closure history for Allen, Central, Potts Point and Olympic. It records closure date, reason, action, responsible person, reopening ETA and explicit reopening. Repeated updates preserve the closure clock; later closures begin a new episode. Unconfirmed spaces are not assumed available. Inventory discrepancies for Central and Potts Point remain visible.
+
+The additive `20261016081751_availability_register.sql` migration creates and seeds 161 named assets plus an empty report ledger. It was applied to Workspace through the logged-in SQL Editor on 16 October; do not apply it a second time. No existing workspace records were changed. The current shared-name role can read the catalog and append reports, but cannot update/delete history or edit the catalog. The OpenClaw `azzurro-availability` plugin syncs WhatsApp observations into this ledger, asks reception at noon/13:30 Sydney, posts the 13:45 summary and sends unresolved cases at 72 hours to Operation bot only. Its SQLite outbox and operator status live on the bot server.
+
+The browser refreshes the register every minute while visible and no editor is open. `npm run demo` keeps availability edits in separate local preview storage. When enabling the deferred staff authentication release, migrate these two tables' read/append policies to the intended staff roles as part of that release; the current migration deliberately preserves shared-name entry.
+
 ## Local preview
 
 Use Node.js 22 or newer (verified with Node 24). Run npm start and open http://127.0.0.1:4173. Normal startup uses the configured shared workspace. The explicit `accessMode: 'shared-name'` flag preserves existing name entry; without that flag the app requires an administrator-created name/password account. Missing backend configuration fails closed.

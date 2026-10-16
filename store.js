@@ -12,7 +12,7 @@ window.FormaStore = (() => {
   };
   let snapshots = new Map();
 
-  async function request(path, method = 'GET', body) {
+  async function request(path, method = 'GET', body, prefer = 'return=representation') {
     const sharedEntry = config.accessMode === 'shared-name';
     const accessToken = sharedEntry ? config.supabasePublishableKey : await window.WorkspaceAuth.token();
     let response;
@@ -23,7 +23,7 @@ window.FormaStore = (() => {
           apikey: config.supabasePublishableKey,
           Authorization: 'Bearer ' + accessToken,
           'Content-Type': 'application/json',
-          Prefer: 'return=representation',
+          Prefer: prefer,
           ...(sharedEntry ? { 'x-board-actor': encodeURIComponent(String(window.boardActorName?.() || 'Unknown').trim().slice(0, 70)) } : {})
         },
         signal: AbortSignal.timeout(20000),
@@ -157,5 +157,7 @@ window.FormaStore = (() => {
     const result = await request('workspace_access?' + new URLSearchParams({ email: equals(user.email), username: equals(user.username), role: equals(user.role), display_name: equals(user.display_name) }), 'DELETE');
     if (!result.length) throw new Error('User access changed. Refresh Users and try again.');
   }
-  return { enabled, load, save, users, saveUser, removeUser };
+  const availabilityLoad = async () => ({assets:await allRows('board_availability_assets?select=*&active=eq.true&order=id.asc'),reports:await allRows('board_availability_reports?select=*&order=reported_at.asc,id.asc')});
+  const availabilityReport = row => request('board_availability_reports?on_conflict=id','POST',row,'resolution=ignore-duplicates,return=representation');
+  return { enabled, load, save, users, saveUser, removeUser, availabilityLoad, availabilityReport };
 })();

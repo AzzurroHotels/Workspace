@@ -1,0 +1,12 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');const {PGlite}=require('@electric-sql/pglite');const Model=require('../availability-model.js');
+test('register migration is additive and its event ledger cannot be changed through the shared browser role',async t=>{
+ const db=new PGlite();t.after(()=>db.close());await db.exec("CREATE ROLE anon; CREATE ROLE authenticated; CREATE TABLE board_tasks(id text primary key,title text); INSERT INTO board_tasks VALUES ('original','Existing work');");
+ const name=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(n=>n.endsWith('_availability_register.sql'));await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8'));
+ assert.deepEqual((await db.query('SELECT * FROM board_tasks')).rows,[{id:'original',title:'Existing work'}]);assert.equal(Number((await db.query('SELECT count(*) AS n FROM board_availability_assets')).rows[0].n),161);
+ await db.exec('SET ROLE anon');assert.equal(Number((await db.query('SELECT count(*) AS n FROM board_availability_assets')).rows[0].n),161);
+ const row="('case-1','central:room:room-101','blocked','2026-10-12','Reception','dashboard','source-1')";
+ await db.exec('INSERT INTO board_availability_reports(id,asset_id,state,closed_on,actor,source,source_id) VALUES '+row);
+ await assert.rejects(db.exec("UPDATE board_availability_reports SET state='available'"),/permission denied/);await assert.rejects(db.exec('DELETE FROM board_availability_reports'),/permission denied/);await assert.rejects(db.exec("INSERT INTO board_availability_assets(id,property,kind,label) VALUES ('fake','Central','room','Fake')"),/permission denied/);
+ await assert.rejects(db.exec("INSERT INTO board_availability_reports(id,asset_id,state,actor,source,source_id) VALUES ('bad','central:room:room-101','guessed','Reception','dashboard','bad')"),/check constraint/);
+});
+test('the dashboard model retains resolved periods when a space closes again',()=>{const assets=[{id:'test',property:'Central',kind:'room',label:'Room 101'}],events=[{id:'a',asset_id:'test',state:'blocked',reported_at:'2026-10-10T00:00:00Z'},{id:'b',asset_id:'test',state:'available',reported_at:'2026-10-11T00:00:00Z'},{id:'c',asset_id:'test',state:'blocked',reported_at:'2026-10-12T00:00:00Z'}];const a=Model.replay(assets,events,Date.parse('2026-10-12T01:00:00Z'))[0];assert.equal(a.history.length,2);assert.equal(a.current.age_hours,1);assert.equal(a.history[0].resolved_at,'2026-10-11T00:00:00Z');});
