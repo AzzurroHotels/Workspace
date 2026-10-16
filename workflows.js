@@ -105,15 +105,7 @@ function purchaseRows() {
 }
 function purchaseCopyText() {
   const rows = purchaseRows(); if (!rows.length) return '';
-  const label = purchaseScope === 'planned' ? 'To buy' : purchaseScope === 'purchased' ? 'Purchased' : 'All items';
-  const lines = [`View: ${label}${purchaseQuery ? ` · Search: ${purchaseQuery}` : ''}`, `To buy: ${state.purchases.filter(row => row.status === 'planned').length} · Purchased: ${state.purchases.filter(row => row.status === 'purchased').length}`, `Items in this view: ${rows.length}`, ''];
-  for (const row of rows) {
-    lines.push(`${row.title} · ${row.status === 'purchased' ? 'PURCHASED' : 'TO BUY'}`, `  Quantity: ${row.quantity || '1'}`, `  Location / category: ${row.category || 'Not set'}`, `  Priority: ${row.priority || 'Normal'}`);
-    if (row.notes) lines.push(`  Details: ${row.notes}`);
-    if (row.purchased_at) lines.push(`  Purchased: ${timestamp(row.purchased_at)} · Sydney`);
-    lines.push('');
-  }
-  return copyDocument('Purchase list', lines);
+  return [`Date: ${dateLabel(today(), true)}`, 'Purchase List', ...rows.map(row => `${row.title} - ${row.quantity || '1'}`)].join('\n');
 }
 function purchaseItems() {
   const rows = purchaseRows();

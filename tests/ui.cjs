@@ -107,12 +107,13 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     assert.match(await workflowPage.evaluate(() => window.__copiedText), /Daily room status/);
     assert.doesNotMatch(await workflowPage.evaluate(() => window.__copiedText), /Reception handover/);
     await workflowPage.locator('[data-view="purchases"]').click(); await workflowPage.locator('#copy-view').click();
-    await workflowPage.waitForFunction(() => window.__copiedText?.includes('PURCHASE LIST'));
+    await workflowPage.waitForFunction(() => window.__copiedText?.includes('Purchase List'));
     const purchaseCopy = await workflowPage.evaluate(() => window.__copiedText);
-    assert.match(purchaseCopy, /Corridor light bulbs/); assert.match(purchaseCopy, /Qty|Quantity: 12 bulbs/);
-    assert.doesNotMatch(purchaseCopy, /Reception stationery/);
+    assert.match(purchaseCopy, /^Date: \d{1,2} [A-Za-z]{3} \d{4}\nPurchase List\nCorridor light bulbs - 12 bulbs\nBath towels - 3 packs$/);
+    assert.doesNotMatch(purchaseCopy, /Quantity|Priority|Maintenance|Reception stationery/);
     await workflowPage.locator('[data-purchase-scope="all"]').click(); await workflowPage.locator('#copy-view').click();
-    await workflowPage.waitForFunction(() => window.__copiedText?.includes('Reception stationery'));
+    await workflowPage.waitForFunction(() => window.__copiedText?.includes('Reception stationery - 2 boxes'));
+    assert.match(await workflowPage.evaluate(() => window.__copiedText), /Corridor light bulbs - 12 bulbs[\s\S]*Bath towels - 3 packs[\s\S]*Reception stationery - 2 boxes/);
     check('Filtered recurring, maintenance history, trackers, and purchase list copy their own fields');
 
     await page.locator('[data-view="board"]').click(); await page.locator('[data-layout="kanban"]').click();
