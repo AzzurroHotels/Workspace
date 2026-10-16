@@ -9,9 +9,29 @@ function recurring() {
   $('#routine-history').onclick = routineHistory;
   routineGroups();
 }
+function recurringCopyText() {
+  const now = new Date();
+  const rows = state.recurring.filter(row => (!routineCategory || row.category === routineCategory) && `${row.title} ${row.category} ${row.notes}`.toLowerCase().includes(routineQuery.trim().toLowerCase()));
+  if (!rows.length) return '';
+  const lines = [`View: ${routineCategory || 'All categories'}${routineQuery ? ` · Search: ${routineQuery}` : ''}`, `Routines: ${rows.length}`, ''];
+  for (const frequency of ['daily', 'weekly']) {
+    const group = rows.filter(row => row.frequency === frequency).sort((a, b) => Schedule.occurrence(a).localeCompare(Schedule.occurrence(b)) || a.time.localeCompare(b.time) || a.title.localeCompare(b.title));
+    if (!group.length) continue;
+    lines.push(frequency === 'daily' ? 'DAILY ROUTINES' : 'WEEKLY ROUTINES', '-'.repeat(48));
+    for (const row of group) {
+      const status = Schedule.status(row, state.completions, now);
+      const cadence = frequency === 'daily' ? 'Every day' : `Every ${Schedule.weekdays[row.weekday]}`;
+      lines.push(`${Schedule.timeLabel(row.time)} · ${row.title}`, `  Schedule: ${cadence}`, `  Category: ${row.category || 'Uncategorized'}`, `  Reminder: ${row.paused ? 'Paused' : `${status.label} · ${dateLabel(status.date, true)}`}`);
+      if (row.notes) lines.push(`  Instructions: ${row.notes}`);
+      if (status.completion) lines.push(`  Completed: ${timestamp(status.completion.completed_at)} · Sydney`);
+      lines.push('');
+    }
+  }
+  return copyDocument('Recurring tasks', lines);
+}
 function routineGroups() {
   routineGroupDate = Schedule.clock().date;
-  const rows=state.recurring.filter(row=>(!routineCategory||row.category===routineCategory)&&`${row.title} ${row.category} ${row.notes}`.toLowerCase().includes(routineQuery.toLowerCase()));
+  const rows=state.recurring.filter(row=>(!routineCategory||row.category===routineCategory)&&`${row.title} ${row.category} ${row.notes}`.toLowerCase().includes(routineQuery.trim().toLowerCase()));
   $('#routine-groups').innerHTML=`<div class="routine-groups">${['daily','weekly'].map(frequency=>{
     const tasks=rows.filter(row=>row.frequency===frequency).sort((a,b)=>Schedule.occurrence(a).localeCompare(Schedule.occurrence(b))||a.time.localeCompare(b.time)||a.title.localeCompare(b.title));
     return `<div class="panel routine-group ${frequency}"><div class="panel-head"><div><h2>${frequency==='daily'?'Daily routines':'Weekly routines'}</h2><p>${frequency==='daily'?'A fresh checklist every day':'The responsibilities that repeat each week'}</p></div><span class="pill">${tasks.length} ${tasks.length===1?'task':'tasks'}</span></div><div class="routine-list">${tasks.map(row=>`<article class="routine-row" data-routine-row="${esc(row.id)}"><div class="routine-time"><b>${esc(Schedule.timeLabel(row.time))}</b><small>${frequency==='daily'?'Every day':Schedule.weekdays[row.weekday]}</small></div><div class="routine-details"><h3>${esc(row.title)}</h3>${row.category?`<span class="pill">${esc(row.category)}</span>`:''}${row.notes?`<p>${esc(row.notes)}</p>`:''}<small class="routine-occurrence"></small><span class="routine-state"></span></div><div class="routine-actions">${isAdmin()?`<button class="secondary" data-complete-routine="${esc(row.id)}"></button><button class="text-button" data-edit-routine="${esc(row.id)}" aria-label="Edit ${esc(row.title)}">Edit</button>`:''}</div></article>`).join('')||`<div class="empty">${state.recurring.length?'No matching '+frequency+' tasks.':'Add a '+frequency+' task with its scheduled time to start your checklist.'}</div>`}</div></div>`;
@@ -80,8 +100,23 @@ function purchases() {
   document.querySelectorAll('[data-purchase-scope]').forEach(b=>b.onclick=()=>{purchaseScope=b.dataset.purchaseScope;purchases();$(`[data-purchase-scope="${purchaseScope}"]`).focus();});
   $('#purchase-search').oninput=event=>{purchaseQuery=event.target.value;purchaseItems();};purchaseItems();
 }
+function purchaseRows() {
+  return state.purchases.filter(r => (purchaseScope === 'all' || r.status === purchaseScope) && `${r.title} ${r.category} ${r.notes}`.toLowerCase().includes(purchaseQuery.trim().toLowerCase())).sort((a, b) => a.status.localeCompare(b.status) || (a.status === 'purchased' ? String(b.purchased_at).localeCompare(String(a.purchased_at)) : (a.priority === 'High' ? -1 : 0) - (b.priority === 'High' ? -1 : 0)) || a.title.localeCompare(b.title));
+}
+function purchaseCopyText() {
+  const rows = purchaseRows(); if (!rows.length) return '';
+  const label = purchaseScope === 'planned' ? 'To buy' : purchaseScope === 'purchased' ? 'Purchased' : 'All items';
+  const lines = [`View: ${label}${purchaseQuery ? ` · Search: ${purchaseQuery}` : ''}`, `To buy: ${state.purchases.filter(row => row.status === 'planned').length} · Purchased: ${state.purchases.filter(row => row.status === 'purchased').length}`, `Items in this view: ${rows.length}`, ''];
+  for (const row of rows) {
+    lines.push(`${row.title} · ${row.status === 'purchased' ? 'PURCHASED' : 'TO BUY'}`, `  Quantity: ${row.quantity || '1'}`, `  Location / category: ${row.category || 'Not set'}`, `  Priority: ${row.priority || 'Normal'}`);
+    if (row.notes) lines.push(`  Details: ${row.notes}`);
+    if (row.purchased_at) lines.push(`  Purchased: ${timestamp(row.purchased_at)} · Sydney`);
+    lines.push('');
+  }
+  return copyDocument('Purchase list', lines);
+}
 function purchaseItems() {
-  const rows=state.purchases.filter(r=>(purchaseScope==='all'||r.status===purchaseScope)&&`${r.title} ${r.category} ${r.notes}`.toLowerCase().includes(purchaseQuery.toLowerCase())).sort((a,b)=>a.status.localeCompare(b.status)||(a.status==='purchased'?String(b.purchased_at).localeCompare(String(a.purchased_at)):(a.priority==='High'?-1:0)-(b.priority==='High'?-1:0))||a.title.localeCompare(b.title));
+  const rows = purchaseRows();
   $('#purchase-items').innerHTML=rows.length?`<div class="purchase-list">${rows.map(row=>`<article class="purchase-row ${row.status}"><span class="purchase-symbol">${icon(row.status==='purchased'?'check':'cart')}</span><div class="purchase-details"><h2>${esc(row.title)}</h2><div class="purchase-meta"><span class="pill">Qty: ${esc(row.quantity)}</span>${row.category?`<span class="pill">${esc(row.category)}</span>`:''}${priorityBadge(row.priority)}</div>${row.notes?`<p>${esc(row.notes)}</p>`:''}${row.purchased_at?`<small>Purchased ${esc(timestamp(row.purchased_at))} · Sydney</small>`:''}</div><div class="purchase-actions">${isAdmin()?`<button class="${row.status==='purchased'?'secondary':'primary'}" data-purchase-toggle="${esc(row.id)}">${row.status==='purchased'?'Move back to To buy':'Mark purchased'}</button><button class="text-button" data-edit-purchase="${esc(row.id)}" aria-label="Edit ${esc(row.title)}">Edit item</button>`:`<span class="pill">${row.status==='purchased'?'Purchased':'To buy'}</span>`}</div></article>`).join('')}</div>`:`<div class="empty-state">${icon('cart')}<h2>${purchaseScope==='purchased'?'Your purchased items will live here.':'Make room for what’s needed.'}</h2><p>${state.purchases.length?'No items match this view. Try another status or search.':'Add an item, quantity, and location. Mark it purchased when it’s bought.'}</p></div>`;
   document.querySelectorAll('[data-edit-purchase]').forEach(b=>b.onclick=()=>purchaseEditor(b.dataset.editPurchase));
   document.querySelectorAll('[data-purchase-toggle]').forEach(b=>b.onclick=async()=>{

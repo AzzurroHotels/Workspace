@@ -20,7 +20,8 @@ function icon(name, className = '') {
     cart: '<path d="M3 4h3l3 12h10l3-8H7M10 21h1M18 21h1"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
     check: '<path d="M5 12l4 4L20 5"/>',
-    search: '<circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/>'
+    search: '<circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/>',
+    copy: '<rect x="8" y="8" width="13" height="13" rx="1"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>'
   };
   return `<svg class="icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.doc}</svg>`;
 }

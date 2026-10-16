@@ -168,7 +168,11 @@ function render() {
   $('#breadcrumb').textContent = titles[view][0];
   connection(stale ? 'Refresh required before editing' : undefined, stale ? 'error' : undefined);
   if (!ready) { $('#content').innerHTML = '<div class="connection-panel" role="status"><p class="eyebrow">AZZURRO WORKSPACE</p><h1>Connecting your team…</h1><p>Loading tasks, members, and recent updates.</p></div>'; return; }
-  $('#content').innerHTML = `${demoMode ? '<div class="preview-banner"><b>Design preview</b><span>Sample data only · Changes here stay in this browser.</span></div>' : ''}${stale ? '<div class="overdue-banner" role="alert"><span>Reconnect to see the latest changes and continue editing.</span><button class="secondary" id="reconnect">Reconnect</button></div>' : ''}<div class="heading ${view === 'users' ? 'users-heading' : ''}"><div><p class="eyebrow">${titles[view][0]}</p><h1>${titles[view][1]}</h1><p class="subtitle">${titles[view][2]}</p></div>${isAdmin() ? view === 'users' ? '<div class="user-add-actions" role="group" aria-label="Choose account role"><button class="primary" id="add-admin-user">＋ Add admin</button><button class="secondary" id="add-viewer-user">＋ Add viewer</button></div>' : `<button class="primary" id="${view === 'recurring' ? 'add-recurring' : view === 'purchases' ? 'add-purchase' : view === 'trackers' ? 'add-tracker' : view === 'members' ? 'add-member' : 'add-task'}">＋ ${view === 'recurring' ? 'Add recurring task' : view === 'purchases' ? 'Add item' : view === 'trackers' ? 'Add tracker' : view === 'members' ? 'Add member' : 'New task'}</button>` : '<span class="access-role viewer">Read-only access</span>'}</div><div id="body"></div>`;
+  const copyNames = { dashboard: 'dashboard', recurring: 'routines', board: 'tasks', maintenance: 'maintenance', trackers: 'trackers', purchases: 'purchase list', members: 'team', users: 'users' };
+  const addAction = isAdmin() ? view === 'users' ? '<div class="user-add-actions" role="group" aria-label="Choose account role"><button class="primary" id="add-admin-user">＋ Add admin</button><button class="secondary" id="add-viewer-user">＋ Add viewer</button></div>' : `<button class="primary" id="${view === 'recurring' ? 'add-recurring' : view === 'purchases' ? 'add-purchase' : view === 'trackers' ? 'add-tracker' : view === 'members' ? 'add-member' : 'add-task'}">＋ ${view === 'recurring' ? 'Add recurring task' : view === 'purchases' ? 'Add item' : view === 'trackers' ? 'Add tracker' : view === 'members' ? 'Add member' : 'New task'}</button>` : '<span class="access-role viewer">Read-only access</span>';
+  $('#content').innerHTML = `${demoMode ? '<div class="preview-banner"><b>Design preview</b><span>Sample data only · Changes here stay in this browser.</span></div>' : ''}${stale ? '<div class="overdue-banner" role="alert"><span>Reconnect to see the latest changes and continue editing.</span><button class="secondary" id="reconnect">Reconnect</button></div>' : ''}<div class="heading ${view === 'users' ? 'users-heading' : ''}"><div><p class="eyebrow">${titles[view][0]}</p><h1>${titles[view][1]}</h1><p class="subtitle">${titles[view][2]}</p></div><div class="heading-actions"><button class="secondary copy-view" id="copy-view">${icon('copy')}<span>Copy ${copyNames[view]}</span></button>${addAction}</div></div><div id="body"></div>`;
+  $('#copy-view').onclick = copyCurrentView;
+  if (view === 'users') $('#copy-view').disabled = true;
   $('#reconnect')?.addEventListener('click', () => refresh(true));
   if (view === 'dashboard') dashboard(); else if (['board', 'maintenance'].includes(view)) board(); else if (view === 'recurring') recurring(); else if (view === 'purchases') purchases(); else if (view === 'users') users(); else if (view === 'trackers') trackers(); else members();
   $('#add-recurring')?.addEventListener('click', () => recurringEditor());
@@ -192,6 +196,43 @@ function restoreBoardFilters(next) {
 function taskRow(task) {
   return `<button class="task-row" data-task="${esc(task.id)}"><span class="dot" aria-hidden="true"></span><span class="details"><b>${esc(task.title)}</b><small class="${overdue(task) ? 'overdue' : ''}">${task.area === 'maintenance' ? 'Maintenance · ' : ''}${esc(member(task.memberId)?.name || 'Unassigned')} · ${task.due === today() ? 'Today' : task.due === offset(1) ? 'Tomorrow' : esc(dateLabel(task.due))}${overdue(task) ? ' · Overdue' : ''}</small></span>${badge(task.status)}</button>`;
 }
+function copyDocument(title, lines) {
+  return [`AZZURRO WORKSPACE · ${title.toUpperCase()}`, `Copied ${timestamp(new Date().toISOString())} · Sydney`, '', ...lines].join('\n');
+}
+async function writeClipboard(text) {
+  if (navigator.clipboard?.writeText) {
+    try { await navigator.clipboard.writeText(text); return; }
+    catch { /* Fall through to the browser's selection-based clipboard path. */ }
+  }
+  const field = document.createElement('textarea');
+  field.value = text; field.setAttribute('readonly', '');
+  field.style.position = 'fixed'; field.style.opacity = '0'; field.style.pointerEvents = 'none';
+  document.body.append(field); field.select();
+  try {
+    if (!document.execCommand('copy')) throw new Error('Clipboard unavailable');
+  } finally { field.remove(); }
+}
+async function copyCurrentView() {
+  const serializers = {
+    dashboard: dashboardCopyText,
+    recurring: recurringCopyText,
+    board: () => taskCopyText(filteredTasks(), 'Operations'),
+    maintenance: () => taskCopyText(filteredTasks(), 'Onsite Maintenance'),
+    trackers: trackerCopyText,
+    purchases: purchaseCopyText,
+    members: memberCopyText,
+    users: userCopyText
+  };
+  const names = { dashboard: 'Dashboard', recurring: 'Recurring tasks', board: 'Operations tasks', maintenance: 'Maintenance tasks', trackers: 'Trackers', purchases: 'Purchase list', members: 'Team members', users: 'Users' };
+  try {
+    const text = serializers[view]();
+    if (!text) { toast('There is nothing in this view to copy.'); return; }
+    await writeClipboard(text);
+    toast(`${names[view]} copied to clipboard`);
+  } catch {
+    toast('Could not copy this view. Check your browser clipboard permissions and try again.', true);
+  }
+}
 function bindTaskButtons(root = $('#body')) { root.querySelectorAll('[data-task]').forEach(button => { button.onclick = () => taskEditor(button.dataset.task); }); }
 function dashboard() {
   const active = state.tasks.filter(task => task.status !== 'Completed');
@@ -202,6 +243,16 @@ function dashboard() {
   $('#view-board').onclick = () => navigate('board');
   $('#view-overdue')?.addEventListener('click', () => { openDialog(`<h2 id="dialog-title">Overdue tasks</h2><div class="day-tasks">${late.sort(sortTasks).map(taskRow).join('')}</div><div class="actions"><button class="secondary" id="cancel">Close</button></div>`); bindTaskButtons($('#editor')); });
   bindTaskButtons(); calendar();
+}
+function dashboardCopyText() {
+  const active = state.tasks.filter(task => task.status !== 'Completed');
+  const due = active.filter(task => task.due >= today() && task.due <= offset(2)).sort(sortTasks);
+  const late = active.filter(overdue).sort(sortTasks);
+  const review = active.filter(task => task.status === 'For Review');
+  const monthLabel = month.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+  const monthTasks = state.tasks.filter(task => task.due && task.due.slice(0, 7) === `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`).sort(sortTasks);
+  const lines = [`Active tasks: ${active.length}`, `Due in the next 3 days: ${due.length}`, `For review: ${review.length}`, `Team members: ${state.members.length}`, `Overdue: ${late.length}`, '', 'COMING UP · ALL TASKS DUE IN THE NEXT 3 DAYS', ...(due.length ? due.map(task => `• ${task.title} · ${task.status} · ${member(task.memberId)?.name || 'Unassigned'} · ${dateLabel(task.due, true)}`) : ['No deadlines in the next three days.']), '', 'OVERDUE', ...(late.length ? late.map(task => `• ${task.title} · ${member(task.memberId)?.name || 'Unassigned'} · ${dateLabel(task.due, true)}`) : ['No overdue tasks.']), '', `TASK CALENDAR · ${monthLabel.toUpperCase()}`, ...(monthTasks.length ? monthTasks.map(task => `• ${dateLabel(task.due, true)} · ${task.title} · ${task.status} · ${member(task.memberId)?.name || 'Unassigned'}`) : ['No tasks due this month.'])];
+  return copyDocument('Dashboard snapshot', lines);
 }
 function calendar() {
   const year = month.getFullYear(), index = month.getMonth();
@@ -227,16 +278,63 @@ function filteredTasks() {
     (scope === 'all' || scope === 'active' && task.status !== 'Completed' || scope === 'completed' && task.status === 'Completed' || scope === 'overdue' && overdue(task)) &&
     [task.title, task.description, task.latest_note, task.maintenance_property, task.maintenance_location, member(task.memberId)?.name].some(value => String(value || '').toLowerCase().includes(needle)));
 }
+function taskCopyText(tasks, title) {
+  if (!tasks.length) return '';
+  const labels = { latest_note: 'Update', status: 'Status', title: 'Title', description: 'Description', memberId: 'Assignee', member_id: 'Assignee', due: 'Due date', priority: 'Priority', maintenance_property: 'Property', maintenance_location: 'Room or place' };
+  const lines = [`View: ${scope} tasks · ${selected === 'all' ? 'Everyone' : member(selected)?.name || 'Unassigned'}${query ? ` · Search: ${query}` : ''}`, `Tasks: ${tasks.length}`, ''];
+  for (const status of statuses) {
+    const group = tasks.filter(task => task.status === status).sort(sortTasks);
+    if (!group.length) continue;
+    lines.push(status.toUpperCase(), '-'.repeat(48));
+    for (const task of group) {
+      lines.push(`• ${task.title}`, `  Assignee: ${member(task.memberId)?.name || 'Unassigned'}`, `  Due: ${dateLabel(task.due, true)}`, `  Priority: ${task.priority || 'Normal'}`);
+      if (task.area === 'maintenance') lines.push(`  Property: ${task.maintenance_property || 'Not set'}`, `  Room or place: ${task.maintenance_location || 'Not set'}`, `  Added: ${taskCreatedLabel(task.created_at) || 'Not recorded'} · Sydney`);
+      lines.push(`  Description: ${task.description || '—'}`, `  Latest update: ${task.latest_note || 'None'}`);
+      const history = (state.activity || []).filter(entry => entry.entity === 'tasks' && entry.record_id === task.id).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+      if (history.length) {
+        lines.push('  Update history:');
+        for (const entry of history) {
+          const action = entry.action === 'INSERT' ? 'Task created' : entry.action === 'DELETE' ? 'Task deleted' : entry.changes?.latest_note ? 'Update added' : 'Task updated';
+          lines.push(`    - ${timestamp(entry.created_at)} · ${entry.actor_name || 'Unknown'} · ${action}`);
+          for (const [key, value] of Object.entries(entry.changes || {})) {
+            if (!labels[key]) continue;
+            const raw = value?.to;
+            const detail = ['memberId', 'member_id'].includes(key) ? member(raw)?.name || (raw ? 'Former member' : 'Unassigned') : raw == null ? '—' : String(raw);
+            lines.push(`      ${labels[key]}: ${detail}`);
+          }
+        }
+      }
+      lines.push('');
+    }
+  }
+  return copyDocument(title, lines);
+}
+function memberCopyText() {
+  if (!state.members.length) return '';
+  const lines = [`Team members: ${state.members.length}`, ''];
+  for (const person of state.members) {
+    const tasks = state.tasks.filter(task => task.memberId === person.id).sort(sortTasks);
+    const active = tasks.filter(task => task.status !== 'Completed');
+    lines.push(`${person.name} · ${person.role || 'No role'}`, `Active tasks: ${active.length}`);
+    if (tasks.length) {
+      lines.push('Assigned work:');
+      for (const task of tasks) lines.push(`  • ${task.title} · ${task.status}${task.due ? ` · Due ${dateLabel(task.due, true)}` : ''}${task.area === 'maintenance' ? ` · ${task.maintenance_property || 'Property not set'}${task.maintenance_location ? ` · ${task.maintenance_location}` : ''}` : ''}`);
+    } else lines.push('Assigned work: None');
+    lines.push('');
+  }
+  const unassigned = state.tasks.filter(task => !task.memberId).sort(sortTasks);
+  if (unassigned.length) lines.push('UNASSIGNED WORK', ...unassigned.map(task => `• ${task.title} · ${task.status} · ${dateLabel(task.due, true)}`));
+  return copyDocument('Team members', lines);
+}
 function sortTasks(a, b) { return String(a.due || '9999').localeCompare(String(b.due || '9999')) || a.title.localeCompare(b.title); }
 function board() {
   if (!['all', 'unassigned'].includes(selected) && !member(selected)) selected = 'all';
   const filters = [['all', 'Everyone'], ['unassigned', 'Unassigned'], ...state.members.map(person => [person.id, person.name])];
-  $('#body').innerHTML = `<div class="tabs" role="group" aria-label="Filter by assignee">${filters.map(([id, name]) => `<button data-filter="${esc(id)}" class="${selected === id ? 'selected' : ''}" aria-pressed="${selected === id}" title="${esc(name)}">${esc(name)}</button>`).join('')}</div><div class="board-toolbar"><div class="view-switch" role="group" aria-label="Task view"><button data-layout="kanban" aria-pressed="${taskView === 'kanban'}" class="${taskView === 'kanban' ? 'selected' : ''}">▥ Kanban</button><button data-layout="list" aria-pressed="${taskView === 'list'}" class="${taskView === 'list' ? 'selected' : ''}">☰ List</button></div><select id="scope" class="toolbar-scope" aria-label="Task scope">${[['active', 'Active tasks'], ['all', 'All tasks'], ['completed', 'Completed'], ['overdue', 'Overdue']].map(([value, label]) => `<option value="${value}" ${scope === value ? 'selected' : ''}>${label}</option>`).join('')}</select><button class="secondary" id="export-tasks">↓ Export text</button><div class="search-wrap"><label class="sr-only" for="search">Search tasks, notes, or people</label><input id="search" type="search" placeholder="Search tasks, notes, people…" value="${esc(query)}"></div></div><div id="columns"></div><p class="note">${!isAdmin() ? 'Select a task title or Notes to view details and update history.' : taskView === 'kanban' ? 'Click a card or its Edit button to open a task. Drag between columns or use the status menu to move it.' : 'Change status directly in the table. Select a title to edit, or Notes to add an update.'} Completed work is available in the All tasks and Completed filters.</p>`;
+  $('#body').innerHTML = `<div class="tabs" role="group" aria-label="Filter by assignee">${filters.map(([id, name]) => `<button data-filter="${esc(id)}" class="${selected === id ? 'selected' : ''}" aria-pressed="${selected === id}" title="${esc(name)}">${esc(name)}</button>`).join('')}</div><div class="board-toolbar"><div class="view-switch" role="group" aria-label="Task view"><button data-layout="kanban" aria-pressed="${taskView === 'kanban'}" class="${taskView === 'kanban' ? 'selected' : ''}">▥ Kanban</button><button data-layout="list" aria-pressed="${taskView === 'list'}" class="${taskView === 'list' ? 'selected' : ''}">☰ List</button></div><select id="scope" class="toolbar-scope" aria-label="Task scope">${[['active', 'Active tasks'], ['all', 'All tasks'], ['completed', 'Completed'], ['overdue', 'Overdue']].map(([value, label]) => `<option value="${value}" ${scope === value ? 'selected' : ''}>${label}</option>`).join('')}</select><div class="search-wrap"><label class="sr-only" for="search">Search tasks, notes, people</label><input id="search" type="search" placeholder="Search tasks, notes, people…" value="${esc(query)}"></div></div><div id="columns"></div><p class="note">${!isAdmin() ? 'Select a task title or Notes to view details and update history.' : taskView === 'kanban' ? 'Click a card or its Edit button to open a task. Drag between columns or use the status menu to move it.' : 'Change status directly in the table. Select a title to edit, or Notes to add an update.'} Completed work is available in the All tasks and Completed filters.</p>`;
   document.querySelectorAll('[data-filter]').forEach(button => { button.onclick = () => { selected = button.dataset.filter; scope = selected === 'all' ? 'active' : 'all'; render(); $(`[data-filter="${CSS.escape(selected)}"]`)?.focus(); }; });
   document.querySelectorAll('[data-layout]').forEach(button => { button.onclick = () => { taskView = button.dataset.layout; storage.set('localStorage', 'forma-task-view', taskView); render(); $(`[data-layout="${taskView}"]`)?.focus(); }; });
   $('#scope').onchange = event => { scope = event.target.value; columns(); };
   $('#search').oninput = event => { query = event.target.value; columns(); };
-  $('#export-tasks').onclick = exportTasks;
   columns();
 }
 function statusPicker(task) {
@@ -431,32 +529,6 @@ function recordLocalChanges(before, after) {
   }
   after.activity = [...entries.reverse(), ...(before.activity || [])];
 }
-function taskExportText(tasks) {
-  const groups = new Map();
-  for (const task of tasks) { const key = task.memberId || ''; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(task); }
-  const lines = ['AZZURRO WORKSPACE — TASK EXPORT', `Exported by: ${visitorName}`, `Exported at: ${timestamp(new Date().toISOString())} (Australia/Sydney)`, `Scope: ${scope} · ${selected === 'all' ? 'Everyone' : member(selected)?.name || 'Unassigned'}${query ? ' · Search: ' + query : ''}`, ''];
-  for (const [id, tasks] of [...groups].sort(([a], [b]) => (member(a)?.name || 'Unassigned').localeCompare(member(b)?.name || 'Unassigned'))) {
-    lines.push('='.repeat(54), `NAME: ${member(id)?.name || 'Unassigned'}`, `ROLE: ${member(id)?.role || '—'}`, `TASKS: ${tasks.length}`, '='.repeat(54), '');
-    tasks.sort(sortTasks).forEach((task, index) => {
-      lines.push(`${index + 1}. ${task.title}`, `Status: ${task.status}`, `Due date: ${task.due || 'Not set'}`, `Priority: ${task.priority}`, ...(task.area === 'maintenance' ? [`Property: ${task.maintenance_property || 'Not set'}`, `Room or place: ${task.maintenance_location || 'Not set'}`, `Added: ${taskCreatedLabel(task.created_at) || 'Not recorded'} (Sydney)`] : []), `Description: ${task.description || '—'}`, `Latest note: ${task.latest_note || 'No notes yet'}`);
-      if (task.latest_note) {
-        const entry = state.activity.filter(entry => entry.entity === 'tasks' && entry.record_id === task.id && entry.changes?.latest_note?.to === task.latest_note).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))[0];
-        lines.push(`Updated by: ${entry?.actor_name || 'Not recorded'}`, `Updated at: ${timestamp(entry?.created_at || task.note_updated_at)} (Sydney)`);
-      }
-      lines.push('');
-    });
-  }
-  return lines.join('\r\n');
-}
-function exportTasks() {
-  const tasks = filteredTasks(); if (!tasks.length) { toast('No tasks to export in this view.'); return; }
-  const blob = new Blob(['\ufeff' + taskExportText(tasks)], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob), link = document.createElement('a');
-  const name = selected === 'all' ? 'everyone' : member(selected)?.name || 'unassigned';
-  link.href = url; link.download = `tasks-${name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/\s+/g, '-')}-${today()}.txt`;
-  document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); toast('Tasks exported by name');
-}
-
 document.querySelectorAll('nav button').forEach(button => { button.onclick = () => navigate(button.dataset.view); });
 window.addEventListener('hashchange', () => { const next = location.hash.slice(1); if (['dashboard', 'recurring', 'board', 'maintenance', 'trackers', 'purchases', 'members', 'users'].includes(next)) { view = next; render(); } });
 $('#editor').addEventListener('cancel', event => { if (busy) event.preventDefault(); });

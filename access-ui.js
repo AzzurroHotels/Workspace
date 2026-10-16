@@ -75,6 +75,7 @@ async function users() {
     }
     if (generation !== usersGeneration || view !== 'users' || !isAdmin() || !$('#users-list')) return;
     $('#users-list').innerHTML = `<div class="users-grid">${usersCache.map(user => { const self = user.email === (authProfile?.email || 'preview@example.com'); return `<article class="panel user-card"><div class="member-top"><span class="avatar">${esc(initials(user.display_name))}</span><span class="access-role ${user.role === 'admin' ? 'admin' : 'viewer'}">${user.role === 'admin' ? 'Admin' : 'Viewer'}</span></div><h3>${esc(user.display_name)}</h3><p class="note">${user.role === 'admin' ? 'Manage the workspace' : 'Read and export workspace information'}</p><div class="member-actions"><button class="secondary" data-edit-user="${esc(user.email)}">Edit name / password</button>${self ? '<span class="pill">You</span>' : `<button class="secondary" data-change-role="${esc(user.email)}" data-next-role="${user.role === 'admin' ? 'viewer' : 'admin'}">Make ${user.role === 'admin' ? 'viewer' : 'admin'}</button><button class="danger" data-remove-user="${esc(user.email)}">Remove access</button>`}</div></article>`; }).join('') || '<p class="empty">No users found.</p>'}</div>${FormaStore.enabled ? '' : '<p class="note">Local preview only. These accounts do not sign in to the shared workspace.</p>'}`;
+    $('#copy-view').disabled = false;
     document.querySelectorAll('[data-edit-user]').forEach(button => { button.onclick = () => userEditor(button.dataset.editUser); });
     document.querySelectorAll('[data-change-role]').forEach(button => { button.onclick = async () => {
       const user = usersCache.find(item => item.email === button.dataset.changeRole);
@@ -98,6 +99,12 @@ async function users() {
     $('#users-list').innerHTML = `<div class="connection-panel"><p>${esc(error.message)}</p><button class="secondary" id="retry-users">Retry loading users</button></div>`;
     $('#retry-users').onclick = users;
   }
+}
+function userCopyText() {
+  if (!Array.isArray(usersCache)) return '';
+  const lines = [`Approved accounts: ${usersCache.length}`, ''];
+  for (const user of usersCache) lines.push(`${user.display_name} · ${user.role === 'admin' ? 'Admin' : 'Viewer'}`, `  Login name: ${user.username || WorkspaceAuth.loginName(user.display_name)}`, '');
+  return copyDocument('Workspace users', lines);
 }
 function persistDemoUsers(next) {
   if (!storage.set('localStorage', 'azzurro-demo-users', JSON.stringify(next))) throw new Error('User preview could not be saved in this browser.');

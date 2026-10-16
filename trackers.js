@@ -27,8 +27,7 @@ function trackers() {
   trackerTiles();
 }
 function trackerTiles() {
-  const all = state.trackers || [], needle = trackerQuery.trim().toLowerCase();
-  const rows = all.filter(row => (trackerFilter === 'all' || trackerKind(row.url).key === trackerFilter) && `${row.name} ${row.url}`.toLowerCase().includes(needle)).sort((a, b) => a.name.localeCompare(b.name));
+  const all = state.trackers || [], rows = trackerRows();
   $('#tracker-grid').innerHTML = rows.length ? `<div class="trackers-grid">${rows.map(row => {
     const kind = trackerKind(row.url), safe = trackerUrl(row.url);
     return `<article class="tracker-tile ${kind.key}"><a class="tracker-open" ${safe ? `href="${esc(safe)}" target="_blank" rel="noopener noreferrer"` : 'aria-disabled="true"'} aria-label="Open ${esc(row.name)} in a new tab"><div class="tracker-top"><span class="tracker-icon">${icon(kind.icon)}</span><span class="tracker-type">${esc(kind.label)}</span>${icon('arrow', 'tracker-arrow')}</div><h2>${esc(row.name)}</h2><p class="tracker-host">${esc(kind.host)}</p><span class="tracker-cta">${safe ? 'Open tracker' : 'Invalid link · Ask an admin to edit'}</span></a>${isAdmin() ? `<div class="tracker-actions"><button class="text-button" data-edit-tracker="${esc(row.id)}" aria-label="Edit ${esc(row.name)}">Edit link</button><button class="text-button remove-link" data-remove-tracker="${esc(row.id)}" aria-label="Remove ${esc(row.name)}">Remove</button></div>` : ''}</article>`;
@@ -42,6 +41,19 @@ function trackerTiles() {
     state.trackers = state.trackers.filter(item => item.id !== row.id);
     if (await save()) { render(); saved('Tracker removed'); }
   }; });
+}
+function trackerRows() {
+  const needle = trackerQuery.trim().toLowerCase();
+  return (state.trackers || []).filter(row => (trackerFilter === 'all' || trackerKind(row.url).key === trackerFilter) && `${row.name} ${row.url}`.toLowerCase().includes(needle)).sort((a, b) => a.name.localeCompare(b.name));
+}
+function trackerCopyText() {
+  const rows = trackerRows(); if (!rows.length) return '';
+  const lines = [`View: ${trackerFilter === 'all' ? 'All trackers' : trackerKind(rows[0].url).label}${trackerQuery ? ` · Search: ${trackerQuery}` : ''}`, `Trackers: ${rows.length}`, ''];
+  for (const row of rows) {
+    const kind = trackerKind(row.url), safe = trackerUrl(row.url);
+    lines.push(`${row.name} · ${kind.label}`, `Link: ${safe || 'Invalid link'}`, '');
+  }
+  return copyDocument('Trackers', lines);
 }
 function trackerEditor(id) {
   if (!canEdit()) return;

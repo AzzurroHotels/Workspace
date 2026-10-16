@@ -22,12 +22,16 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     await context.route('**/*.supabase.co/**', route => route.abort());
     const page = await context.newPage(); page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(data => { sessionStorage.setItem('forma-visitor', 'Alex Chen'); if (data && !localStorage.getItem('azzurro-board-v2')) localStorage.setItem('azzurro-board-v2', JSON.stringify(data)); }, data);
+    await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async value => { window.__copiedText = value; } } }));
     await page.goto(base); await page.locator('.heading').waitFor();
     return page;
   }
   try {
     const page = await newPage(fixture());
     assert.equal(await page.locator('.stat-label:visible').count(), 4);
+    await page.locator('#copy-view').click();
+    await page.waitForFunction(() => window.__copiedText?.includes('DASHBOARD SNAPSHOT'));
+    assert.match(await page.evaluate(() => window.__copiedText), /COMING UP · ALL TASKS DUE IN THE NEXT 3 DAYS/);
     await page.screenshot({ path: path.join(output, 'desktop-dashboard.png'), fullPage: true });
     await page.locator('[data-view="board"]').click();
     await page.locator('#scope').selectOption('all');
@@ -49,11 +53,12 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     await page.locator('#scope').selectOption('all');
     await page.locator('#search').fill('templates tested');
     assert.equal(await page.locator('[data-task="task-7"]').count(), 1);
-    const downloadPromise = page.waitForEvent('download'); await page.locator('#export-tasks').click();
-    const download = await downloadPromise; const exportPath = await download.path();
-    const exported = fs.readFileSync(exportPath, 'utf8'); assert.match(exported, /Test payment confirmation emails/); assert.doesNotMatch(exported, /Inspect common-area lighting/);
+    await page.locator('#copy-view').click();
+    await page.waitForFunction(() => window.__copiedText?.includes('Test payment confirmation emails'));
+    const exported = await page.evaluate(() => window.__copiedText);
+    assert.match(exported, /View: all tasks/); assert.doesNotMatch(exported, /Inspect common-area lighting/);
     await page.locator('#search').fill('');
-    check('Completed unassigned work, note search, and filtered text export');
+    check('Completed unassigned work, note search, and filtered task copy');
 
     await page.locator('[data-view="members"]').click(); await page.locator('#add-member').click();
     await page.locator('#name').fill('Test Member'); await page.locator('#role').selectOption('ProB'); await page.locator('#member-form button[type="submit"]').click();
@@ -72,7 +77,41 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     assert.equal(await page.locator(`[data-task-status="${taskId}"]`).inputValue(), 'Completed');
     check('Create member/task, edit details, save notes without losing draft, update status');
 
-    await page.locator('[data-layout="kanban"]').click();
+    await page.locator('[data-view="members"]').click(); await page.locator('#copy-view').click();
+    await page.waitForFunction(() => window.__copiedText?.includes('TEAM MEMBERS'));
+    assert.match(await page.evaluate(() => window.__copiedText), /Alex Chen/);
+    assert.match(await page.evaluate(() => window.__copiedText), /Prepare the weekly operations report/);
+    await page.locator('[data-view="users"]').click(); await page.waitForFunction(() => !document.querySelector('#copy-view').disabled);
+    await page.locator('#copy-view').click(); await page.waitForFunction(() => window.__copiedText?.includes('WORKSPACE USERS'));
+    const userCopy = await page.evaluate(() => window.__copiedText);
+    assert.match(userCopy, /Login name: preview/); assert.doesNotMatch(userCopy, /password|preview@example\.com/i);
+    check('Team and user tabs copy helpful fields without copying passwords or account emails');
+
+    const workflowPage = await newPage(require('./workflow-fixtures.cjs')());
+    await workflowPage.locator('[data-view="recurring"]').click(); await workflowPage.locator('#routine-category').selectOption({ label: 'Housekeeping' });
+    await workflowPage.locator('#routine-search').fill('room'); await workflowPage.locator('#copy-view').click();
+    await workflowPage.waitForFunction(() => window.__copiedText?.includes('RECURRING TASKS'));
+    const routineCopy = await workflowPage.evaluate(() => window.__copiedText);
+    assert.match(routineCopy, /Room status check/); assert.match(routineCopy, /Every day/); assert.doesNotMatch(routineCopy, /Evening handover/);
+    await workflowPage.locator('[data-view="maintenance"]').click();
+    await workflowPage.evaluate(() => state.activity.push({ entity: 'tasks', record_id: 'maintenance-demo', action: 'UPDATE', actor_name: 'Sam Taylor', created_at: new Date().toISOString(), changes: { latest_note: { from: '', to: 'Checked the fitting' } } }));
+    await workflowPage.locator('#copy-view').click(); await workflowPage.waitForFunction(() => window.__copiedText?.includes('ONSITE MAINTENANCE'));
+    const maintenanceCopy = await workflowPage.evaluate(() => window.__copiedText);
+    assert.match(maintenanceCopy, /Property: Central/); assert.match(maintenanceCopy, /Room or place: Second-floor corridor/); assert.match(maintenanceCopy, /Checked the fitting/);
+    await workflowPage.locator('[data-view="trackers"]').click(); await workflowPage.locator('[data-tracker-filter="sheet"]').click();
+    await workflowPage.locator('#copy-view').click(); await workflowPage.waitForFunction(() => window.__copiedText?.includes('Trackers: 2'));
+    assert.match(await workflowPage.evaluate(() => window.__copiedText), /Daily room status/);
+    assert.doesNotMatch(await workflowPage.evaluate(() => window.__copiedText), /Reception handover/);
+    await workflowPage.locator('[data-view="purchases"]').click(); await workflowPage.locator('#copy-view').click();
+    await workflowPage.waitForFunction(() => window.__copiedText?.includes('PURCHASE LIST'));
+    const purchaseCopy = await workflowPage.evaluate(() => window.__copiedText);
+    assert.match(purchaseCopy, /Corridor light bulbs/); assert.match(purchaseCopy, /Qty|Quantity: 12 bulbs/);
+    assert.doesNotMatch(purchaseCopy, /Reception stationery/);
+    await workflowPage.locator('[data-purchase-scope="all"]').click(); await workflowPage.locator('#copy-view').click();
+    await workflowPage.waitForFunction(() => window.__copiedText?.includes('Reception stationery'));
+    check('Filtered recurring, maintenance history, trackers, and purchase list copy their own fields');
+
+    await page.locator('[data-view="board"]').click(); await page.locator('[data-layout="kanban"]').click();
     await page.locator('.card[data-id="task-2"]').dragTo(page.locator('.column[data-status="In progress"]'));
     assert.equal(await page.locator('[data-task-status="task-2"]').inputValue(), 'In progress');
     await page.locator('[data-view="members"]').click();
@@ -116,14 +155,21 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
       await page.locator('#add-member').click();
       const fits = await page.locator('#editor').evaluate(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight; });
       assert.equal(fits, true, `Dialog overflows at ${width}`); await page.keyboard.press('Escape');
+      await workflowPage.setViewportSize({ width, height: 1000 });
+      for (const workflowView of ['recurring', 'maintenance', 'trackers', 'purchases']) {
+        await workflowPage.locator(`[data-view="${workflowView}"]`).click();
+        assert.equal(await workflowPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `${workflowView} overflows at ${width}`);
+        const actionFits = await workflowPage.locator('#copy-view').evaluate(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; });
+        assert.equal(actionFits, true, `${workflowView} copy action overflows at ${width}`);
+      }
     }
     await page.setViewportSize({ width: 390, height: 844 }); await page.locator('[data-view="board"]').click(); await page.screenshot({ path: path.join(output, 'mobile-board.png'), fullPage: true });
     check('Responsive views and dialogs', widths.join(', ') + 'px; desktop stays four columns at 1280px+');
 
     const empty = await newPage(null);
     await empty.locator('[data-view="members"]').click(); assert.equal(await empty.locator('#first-member').count(), 1);
-    await empty.locator('[data-view="board"]').click(); await empty.locator('#search').fill('no results'); await empty.locator('#export-tasks').click();
-    assert.match(await empty.locator('#toast').innerText(), /No tasks/);
+    await empty.locator('[data-view="board"]').click(); await empty.locator('#search').fill('no results'); await empty.locator('#copy-view').click();
+    assert.match(await empty.locator('#toast').innerText(), /nothing in this view/);
     assert.equal(await empty.locator('#change-name,#welcome-form,#visitor-name').count(), 0);
     await empty.setViewportSize({width:320,height:800});
     assert.equal(await empty.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);

@@ -54,7 +54,7 @@ fs.mkdirSync(output,{recursive:true});
     assert.equal(db.board_tasks.length,fixture.tasks.length);
     const originalTasks=JSON.stringify(db.board_tasks);
     await page.locator('[data-view="maintenance"]').click();await page.locator('#add-task').click();
-    await page.locator('#title').fill('Mock maintenance request');await page.locator('#task-form button[type="submit"]').click();
+    await page.locator('#title').fill('Mock maintenance request');await page.locator('#maintenance-property').selectOption('Allen');await page.locator('#task-form button[type="submit"]').click();
     await page.locator('.card').waitFor();assert.equal(db.board_tasks.at(-1).area,'maintenance');
     assert.equal(JSON.stringify(db.board_tasks.slice(0,-1)),originalTasks);
     console.log('PASS Shared REST maintenance creation preserves existing tasks');
