@@ -105,7 +105,7 @@ function purchaseRows() {
 }
 function purchaseCopyText() {
   const rows = purchaseRows(); if (!rows.length) return '';
-  return [`Date: ${dateLabel(today(), true)}`, 'Purchase List', ...rows.map(row => `${row.title} - ${row.quantity || '1'}`)].join('\n');
+  return [`*Date: ${dateLabel(today(), true)}*`, '', '*Purchase List*', '', ...rows.map(row => `${row.title} - ${row.quantity || '1'}`)].join('\n');
 }
 function purchaseItems() {
   const rows = purchaseRows();

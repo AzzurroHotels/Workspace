@@ -109,7 +109,7 @@ const check = (name, details = '') => { results.push({ name, status: 'passed', d
     await workflowPage.locator('[data-view="purchases"]').click(); await workflowPage.locator('#copy-view').click();
     await workflowPage.waitForFunction(() => window.__copiedText?.includes('Purchase List'));
     const purchaseCopy = await workflowPage.evaluate(() => window.__copiedText);
-    assert.match(purchaseCopy, /^Date: \d{1,2} [A-Za-z]{3} \d{4}\nPurchase List\nCorridor light bulbs - 12 bulbs\nBath towels - 3 packs$/);
+    assert.match(purchaseCopy, /^\*Date: \d{1,2} [A-Za-z]{3} \d{4}\*\n\n\*Purchase List\*\n\nCorridor light bulbs - 12 bulbs\nBath towels - 3 packs$/);
     assert.doesNotMatch(purchaseCopy, /Quantity|Priority|Maintenance|Reception stationery/);
     await workflowPage.locator('[data-purchase-scope="all"]').click(); await workflowPage.locator('#copy-view').click();
     await workflowPage.waitForFunction(() => window.__copiedText?.includes('Reception stationery - 2 boxes'));
